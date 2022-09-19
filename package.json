@@ -1,5 +1,5 @@
 {
-  "name": "assoannonce-backend",
+  "name": "api-assoannonce",
   "version": "1.0.0",
   "description": "projet visant a permettre aux association de poster des annoces afin de trouver des bénévoles pour des mission plus ou moins ponctuel",
   "main": "index.js",
