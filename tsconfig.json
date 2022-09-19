@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "types": ["node"],
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "noEmitOnError": true,
+    "noEmit": false,
+    "strict": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "outDir": "build",
+    "lib": ["es2015"],
+    "noImplicitAny": false
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "**/__test__"]
+}
