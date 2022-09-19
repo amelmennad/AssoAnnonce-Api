@@ -18,9 +18,7 @@ const router = express.Router();
 router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { firstName, lastName, email, password, birthday } = req.fields;
-        const arrayBirtday = birthday.split("-");
-        const diff = new Date(Date.now() -
-            new Date(Number(arrayBirtday[0]), Number(arrayBirtday[1]), Number(arrayBirtday[2])).getTime());
+        const diff = new Date(Date.now() - new Date(birthday).getTime());
         const age = Math.abs(diff.getUTCFullYear() - 1970);
         if (age < 16) {
             throw new Error("age: too young");

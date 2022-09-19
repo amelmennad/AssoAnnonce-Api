@@ -11,15 +11,7 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
   try {
     const { firstName, lastName, email, password, birthday }: IVolunteerSchema = req.fields;
 
-    const arrayBirtday: string[] = birthday.split("-");
-    const diff = new Date(
-      Date.now() -
-        new Date(
-          Number(arrayBirtday[0]),
-          Number(arrayBirtday[1]),
-          Number(arrayBirtday[2])
-        ).getTime()
-    );
+    const diff = new Date(Date.now() - new Date(birthday).getTime());
     const age = Math.abs(diff.getUTCFullYear() - 1970);
 
     if (age < 16) {
