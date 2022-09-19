@@ -57,8 +57,3 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
     }
 }));
 module.exports = router;
-// Login create newtoken
-// newVolunteer.token = jwt.sign({
-//   userId: newVolunteer._id },
-//   "RANDOM_TOKEN_SECRET",
-//   { expiresIn: "24h" });
