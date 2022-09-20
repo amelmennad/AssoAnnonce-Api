@@ -19,7 +19,8 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
     }
 
     const passwordRegex: RegExp = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
-    if (password?.length < 8) {
+    const passwordLength: Number = password.length;
+    if (passwordLength < 8) {
       throw new Error("password: too short");
     }
     if (!passwordRegex.test(password)) {
