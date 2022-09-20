@@ -17,6 +17,13 @@ const uid2 = require("uid2");
 const router = express.Router();
 router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        if (!req.fields.firstName ||
+            !req.fields.lastName ||
+            !req.fields.email ||
+            !req.fields.password ||
+            !req.fields.birthday) {
+            throw new Error("not all need data");
+        }
         const { firstName, lastName, email, password, birthday } = req.fields;
         const diff = new Date(Date.now() - new Date(birthday).getTime());
         const age = Math.abs(diff.getUTCFullYear() - 1970);
