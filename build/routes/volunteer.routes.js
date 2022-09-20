@@ -24,7 +24,8 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
             throw new Error("age: too young");
         }
         const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
-        if ((password === null || password === void 0 ? void 0 : password.length) < 8) {
+        const passwordLength = password.length;
+        if (passwordLength < 8) {
             throw new Error("password: too short");
         }
         if (!passwordRegex.test(password)) {
