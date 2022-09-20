@@ -16,6 +16,7 @@
   "parserOptions": {
     "ecmaVersion": "latest"
   },
+  "ignorePatterns": ["**/build"],
   "plugins": ["@typescript-eslint", "prettier", "jest"],
   "rules": {
     "no-console": "off",
