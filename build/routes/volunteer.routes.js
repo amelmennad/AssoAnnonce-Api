@@ -38,7 +38,7 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
         if (!passwordRegex.test(password)) {
             throw new Error("password: not validated");
         }
-        const emailRegex = /[a-z0-9]+@[a-z]+.[a-z]{2,3}/;
+        const emailRegex = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
         if (!emailRegex.test(email)) {
             throw new Error("email: not validated");
         }
