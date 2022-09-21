@@ -8,8 +8,10 @@ app.use(morgan("combined"));
 app.use(formidableMiddleware());
 
 const volunteerRoutes = require("./routes/volunteer.routes");
+const associationRoutes = require("./routes/association.routes");
 
 app.use(volunteerRoutes);
+app.use(associationRoutes);
 
 app.get("/", (req, res) => {
   res.json("Hello World");
