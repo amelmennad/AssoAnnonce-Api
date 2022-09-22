@@ -6,6 +6,7 @@ export interface IVolunteerSchema extends Document {
   lastName: string;
   email: string;
   password: string;
+  salt: string;
   token: string;
   cgu: boolean;
   birthday: string;
