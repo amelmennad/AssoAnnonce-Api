@@ -63,4 +63,31 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
         res.status(400).json(err.message);
     }
 }));
+router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const volunteerToCheck = yield volunteer_model_1.Volunteer.findOne({
+            email: req.fields.email,
+        });
+        if (volunteerToCheck === null) {
+            res.status(401).json({ message: "Unauthorized !" });
+        }
+        else {
+            const passwordClean = req.fields.password.replace(req.fields.salt, "");
+            yield bcrypt.compare(passwordClean, volunteerToCheck.password, (err, compareResult) => __awaiter(void 0, void 0, void 0, function* () {
+                if (compareResult) {
+                    volunteerToCheck.token = uid2(16);
+                    yield volunteerToCheck.save();
+                    res.status(200).json({ message: "you're login" });
+                }
+                else {
+                    res.status(401).json({ message: "Unauthorized !" });
+                }
+            }));
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}));
+module.exports = router;
 module.exports = router;

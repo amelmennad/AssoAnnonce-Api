@@ -29,6 +29,7 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
 
     const passwordRegex: RegExp = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
     const passwordLength: Number = password.length;
+
     if (passwordLength < 8) {
       throw new Error("password: too short");
     }
@@ -64,5 +65,37 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
     res.status(400).json(err.message);
   }
 });
+
+router.post("/api/volunteer/login", async (req, res) => {
+  try {
+    const volunteerToCheck: IVolunteerSchema | null = await Volunteer.findOne({
+      email: req.fields.email,
+    });
+
+    if (volunteerToCheck === null) {
+      res.status(401).json({ message: "Unauthorized !" });
+    } else {
+      const passwordClean = req.fields.password.replace(req.fields.salt, "");
+      await bcrypt.compare(
+        passwordClean,
+        volunteerToCheck.password,
+        async (err: any, compareResult: boolean): Promise<void> => {
+          if (compareResult) {
+            volunteerToCheck.token = uid2(16);
+            await volunteerToCheck.save();
+
+            res.status(200).json({ message: "you're login" });
+          } else {
+            res.status(401).json({ message: "Unauthorized !" });
+          }
+        }
+      );
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;
 
 module.exports = router;
