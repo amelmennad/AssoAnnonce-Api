@@ -13,6 +13,7 @@ export interface IAssociationSchema extends Document {
   associationStatutes: string;
   interiorRules: string;
   secondaryEstablishment: boolean;
+  address: string;
   rnaNumber: string;
   sirene: string;
   sireneNumber: string;
@@ -48,7 +49,7 @@ const AssociationSchema: Schema = new Schema<IAssociationSchema>({
   associationStatutes: { type: String, required: true },
   interiorRules: { type: String, required: true },
   secondaryEstablishment: { type: Boolean, required: true },
-
+  address: { type: String, required: true },
   rnaNumber: { type: String, required: true },
   sirene: { type: String, required: true },
   sireneNumber: { type: String, required: true },
