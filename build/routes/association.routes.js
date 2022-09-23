@@ -133,7 +133,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
         res.json(newAssociation);
     }
     catch (err) {
-        res.status(400).json(err.message);
+        res.status(400).json(err);
     }
 }));
 module.exports = router;

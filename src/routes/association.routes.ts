@@ -156,7 +156,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
     await newAssociation.save();
     res.json(newAssociation);
   } catch (err: any) {
-    res.status(400).json(err.message);
+    res.status(400).json(err);
   }
 });
 
