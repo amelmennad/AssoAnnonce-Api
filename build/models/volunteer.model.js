@@ -29,7 +29,7 @@ const VolunteerSchema = new mongoose_1.Schema({
     role: { type: String, required: true, default: "volunteer" },
     firstName: { type: String, required: true, minlength: 3 },
     lastName: { type: String, required: true, minlength: 3 },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     password: { type: String, required: true, minlength: 8 },
     salt: { type: String, required: true },
     token: { type: String, required: true },
