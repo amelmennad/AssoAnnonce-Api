@@ -10,6 +10,12 @@ const router = express.Router();
 
 router.post("/api/association/register", async (req, res): Promise<void> => {
   try {
+    const checkEmailUnique: IAssociationSchema | null = await Association.findOne({
+      email: req.fields.email,
+    });
+    if (checkEmailUnique !== null) {
+      throw new Error("email exist");
+    }
     if (
       !req.fields.firstName ||
       !req.fields.lastName ||
@@ -164,14 +170,19 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
 router.post("/api/association/login", async (req, res) => {
   try {
     console.log("file: association.routes.ts -> line 71 -> req.fields", req.fields);
+    console.log("file: association.routes.ts -> line 169 ->  req.fields.email", req.fields.email);
     const associationToCheck: IAssociationSchema | null = await Association.findOne({
       email: req.fields.email,
     });
+    console.log(
+      "file: association.routes.ts -> line 170 -> associationToCheck",
+      associationToCheck
+    );
 
     if (associationToCheck === null) {
-      res.status(401).json({ message: "Unauthorized !" });
+      res.status(401).json({ message: "Unauthorized 1 !" });
     } else {
-      const passwordClean = req.fields.password.replace(req.fields.salt, "");
+      const passwordClean = req.fields.password.replace(associationToCheck.salt, "");
       await bcrypt.compare(
         passwordClean,
         associationToCheck.password,
@@ -182,7 +193,7 @@ router.post("/api/association/login", async (req, res) => {
 
             res.status(200).json({ message: "you're login" });
           } else {
-            res.status(401).json({ message: "Unauthorized !" });
+            res.status(401).json({ message: "Unauthorized 2 !" });
           }
         }
       );
