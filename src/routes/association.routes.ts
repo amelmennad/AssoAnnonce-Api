@@ -76,6 +76,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
       lastName,
       email,
       password: hashed,
+      salt,
       token: uid2(16),
       secondaryEstablishment,
       rnaNumber,
@@ -156,7 +157,38 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
     await newAssociation.save();
     res.json(newAssociation);
   } catch (err: any) {
-    res.status(400).json(err);
+    res.status(400).json(err.message);
+  }
+});
+
+router.post("/api/association/login", async (req, res) => {
+  try {
+    console.log("file: association.routes.ts -> line 71 -> req.fields", req.fields);
+    const associationToCheck: IAssociationSchema | null = await Association.findOne({
+      email: req.fields.email,
+    });
+
+    if (associationToCheck === null) {
+      res.status(401).json({ message: "Unauthorized !" });
+    } else {
+      const passwordClean = req.fields.password.replace(req.fields.salt, "");
+      await bcrypt.compare(
+        passwordClean,
+        associationToCheck.password,
+        async (err: any, compareResult: boolean): Promise<void> => {
+          if (compareResult) {
+            associationToCheck.token = uid2(16);
+            await associationToCheck.save();
+
+            res.status(200).json({ message: "you're login" });
+          } else {
+            res.status(401).json({ message: "Unauthorized !" });
+          }
+        }
+      );
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 

@@ -24,6 +24,7 @@ const VolunteerSchema: Schema = new Schema<IVolunteerSchema>({
   lastName: { type: String, required: true, minlength: 3 },
   email: { type: String, required: true },
   password: { type: String, required: true, minlength: 8 },
+  salt: { type: String, required: true },
   token: { type: String, required: true },
   cgu: { type: Boolean, require: true },
   birthday: { type: String, require: true },
