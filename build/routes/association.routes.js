@@ -133,7 +133,35 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
         res.json(newAssociation);
     }
     catch (err) {
-        res.status(400).json(err);
+        res.status(400).json(err.message);
+    }
+}));
+
+router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log("file: association.routes.ts -> line 71 -> req.fields", req.fields);
+        const associationToCheck = yield association_model_1.Association.findOne({
+            email: req.fields.email,
+        });
+        if (associationToCheck === null) {
+            res.status(401).json({ message: "Unauthorized !" });
+        }
+        else {
+            const passwordClean = req.fields.password.replace(req.fields.salt, "");
+            yield bcrypt.compare(passwordClean, associationToCheck.password, (err, compareResult) => __awaiter(void 0, void 0, void 0, function* () {
+                if (compareResult) {
+                    associationToCheck.token = uid2(16);
+                    yield associationToCheck.save();
+                    res.status(200).json({ message: "you're login" });
+                }
+                else {
+                    res.status(401).json({ message: "Unauthorized !" });
+                }
+            }));
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
     }
 }));
 module.exports = router;
