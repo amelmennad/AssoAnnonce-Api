@@ -61,8 +61,8 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
     await newVolunteer.save();
 
     res.json(newVolunteer);
-  } catch (err: any) {
-    res.status(400).json(err.message);
+  } catch (error: any) {
+    res.status(400).json(error.message);
   }
 });
 
@@ -84,7 +84,7 @@ router.post("/api/volunteer/login", async (req, res) => {
             volunteerToCheck.token = uid2(16);
             await volunteerToCheck.save();
 
-            res.status(200).json({ message: "you're login" });
+            res.status(200).json({ id: volunteerToCheck.id, token: volunteerToCheck.token });
           } else {
             res.status(401).json({ message: "Unauthorized !" });
           }
@@ -92,10 +92,8 @@ router.post("/api/volunteer/login", async (req, res) => {
       );
     }
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(400).json(error.message);
   }
 });
-
-module.exports = router;
 
 module.exports = router;

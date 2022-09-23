@@ -59,8 +59,8 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
         yield newVolunteer.save();
         res.json(newVolunteer);
     }
-    catch (err) {
-        res.status(400).json(err.message);
+    catch (error) {
+        res.status(400).json(error.message);
     }
 }));
 router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -77,7 +77,7 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
                 if (compareResult) {
                     volunteerToCheck.token = uid2(16);
                     yield volunteerToCheck.save();
-                    res.status(200).json({ message: "you're login" });
+                    res.status(200).json({ id: volunteerToCheck.id, token: volunteerToCheck.token });
                 }
                 else {
                     res.status(401).json({ message: "Unauthorized !" });
@@ -86,8 +86,7 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
         }
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(400).json(error.message);
     }
 }));
-module.exports = router;
 module.exports = router;
