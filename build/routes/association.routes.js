@@ -61,6 +61,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             lastName,
             email,
             password: hashed,
+            salt,
             token: uid2(16),
             secondaryEstablishment,
             rnaNumber,
@@ -136,7 +137,6 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
         res.status(400).json(err.message);
     }
 }));
-
 router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("file: association.routes.ts -> line 71 -> req.fields", req.fields);

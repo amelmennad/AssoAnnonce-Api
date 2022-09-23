@@ -76,6 +76,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
       lastName,
       email,
       password: hashed,
+      salt,
       token: uid2(16),
       secondaryEstablishment,
       rnaNumber,

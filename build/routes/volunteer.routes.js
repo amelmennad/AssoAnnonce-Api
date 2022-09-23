@@ -50,6 +50,7 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
             lastName,
             email,
             password: hashed,
+            salt,
             token: uid2(16),
             birthday,
             timestamps: {
