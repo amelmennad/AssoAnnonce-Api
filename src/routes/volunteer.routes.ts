@@ -9,6 +9,13 @@ const router = express.Router();
 
 router.post("/api/volunteer/register", async (req, res): Promise<void> => {
   try {
+    const checkEmailUnique: IVolunteerSchema | null = await Volunteer.findOne({
+      email: req.fields.email,
+    });
+    if (checkEmailUnique !== null) {
+      throw new Error("email exist");
+    }
+
     if (
       !req.fields.firstName ||
       !req.fields.lastName ||
@@ -75,7 +82,7 @@ router.post("/api/volunteer/login", async (req, res) => {
     if (volunteerToCheck === null) {
       res.status(401).json({ message: "Unauthorized !" });
     } else {
-      const passwordClean = req.fields.password.replace(req.fields.salt, "");
+      const passwordClean = req.fields.password.replace(volunteerToCheck, "");
       await bcrypt.compare(
         passwordClean,
         volunteerToCheck.password,

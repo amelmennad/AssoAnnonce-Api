@@ -17,6 +17,12 @@ const uid2 = require("uid2");
 const router = express.Router();
 router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const checkEmailUnique = yield volunteer_model_1.Volunteer.findOne({
+            email: req.fields.email,
+        });
+        if (checkEmailUnique !== null) {
+            throw new Error("email exist");
+        }
         if (!req.fields.firstName ||
             !req.fields.lastName ||
             !req.fields.email ||
@@ -72,7 +78,7 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
             res.status(401).json({ message: "Unauthorized !" });
         }
         else {
-            const passwordClean = req.fields.password.replace(req.fields.salt, "");
+            const passwordClean = req.fields.password.replace(volunteerToCheck, "");
             yield bcrypt.compare(passwordClean, volunteerToCheck.password, (err, compareResult) => __awaiter(void 0, void 0, void 0, function* () {
                 if (compareResult) {
                     volunteerToCheck.token = uid2(16);

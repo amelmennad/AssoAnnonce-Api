@@ -22,7 +22,7 @@ const VolunteerSchema: Schema = new Schema<IVolunteerSchema>({
   role: { type: String, required: true, default: "volunteer" },
   firstName: { type: String, required: true, minlength: 3 },
   lastName: { type: String, required: true, minlength: 3 },
-  email: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
   password: { type: String, required: true, minlength: 8 },
   token: { type: String, required: true },
   cgu: { type: Boolean, require: true },
