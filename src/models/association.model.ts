@@ -40,7 +40,7 @@ const AssociationSchema: Schema = new Schema<IAssociationSchema>({
   status: { type: String, required: true, default: "pending" },
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
-  email: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   salt: { type: String, required: true },
   token: { type: String, required: true },

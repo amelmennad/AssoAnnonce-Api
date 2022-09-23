@@ -18,6 +18,12 @@ const cloudinary = require("cloudinary").v2;
 const router = express.Router();
 router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const checkEmailUnique = yield association_model_1.Association.findOne({
+            email: req.fields.email,
+        });
+        if (checkEmailUnique !== null) {
+            throw new Error("email exist");
+        }
         if (!req.fields.firstName ||
             !req.fields.lastName ||
             !req.fields.email ||
@@ -61,6 +67,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             lastName,
             email,
             password: hashed,
+            salt,
             token: uid2(16),
             secondaryEstablishment,
             rnaNumber,
@@ -136,18 +143,19 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
         res.status(400).json(err.message);
     }
 }));
-
 router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("file: association.routes.ts -> line 71 -> req.fields", req.fields);
+        console.log("file: association.routes.ts -> line 169 ->  req.fields.email", req.fields.email);
         const associationToCheck = yield association_model_1.Association.findOne({
             email: req.fields.email,
         });
+        console.log("file: association.routes.ts -> line 170 -> associationToCheck", associationToCheck);
         if (associationToCheck === null) {
-            res.status(401).json({ message: "Unauthorized !" });
+            res.status(401).json({ message: "Unauthorized 1 !" });
         }
         else {
-            const passwordClean = req.fields.password.replace(req.fields.salt, "");
+            const passwordClean = req.fields.password.replace(associationToCheck.salt, "");
             yield bcrypt.compare(passwordClean, associationToCheck.password, (err, compareResult) => __awaiter(void 0, void 0, void 0, function* () {
                 if (compareResult) {
                     associationToCheck.token = uid2(16);
@@ -155,7 +163,7 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
                     res.status(200).json({ message: "you're login" });
                 }
                 else {
-                    res.status(401).json({ message: "Unauthorized !" });
+                    res.status(401).json({ message: "Unauthorized 2 !" });
                 }
             }));
         }
