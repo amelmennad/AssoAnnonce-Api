@@ -17,23 +17,28 @@ const uid2 = require("uid2");
 const router = express.Router();
 router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        if (!req.fields.firstName ||
+            !req.fields.lastName ||
+            !req.fields.email ||
+            !req.fields.password ||
+            !req.fields.birthday) {
+            throw new Error("not all need data");
+        }
         const { firstName, lastName, email, password, birthday } = req.fields;
-        const arrayBirtday = birthday.split("-");
-        const diff = new Date(Date.now() -
-            new Date(Number(arrayBirtday[0]), Number(arrayBirtday[1]), Number(arrayBirtday[2])).getTime());
+        const diff = new Date(Date.now() - new Date(birthday).getTime());
         const age = Math.abs(diff.getUTCFullYear() - 1970);
         if (age < 16) {
             throw new Error("age: too young");
         }
-        const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,16}$/;
-        // /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*d)(?=.*[@$!%*?&])[A-Za-z0-9 d@$!%*?&]{8,}$/;
-        if (password.length < 8) {
+        const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
+        const passwordLength = password.length;
+        if (passwordLength < 8) {
             throw new Error("password: too short");
         }
         if (!passwordRegex.test(password)) {
             throw new Error("password: not validated");
         }
-        const emailRegex = /[a-z0-9]+@[a-z]+.[a-z]{2,3}/;
+        const emailRegex = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
         if (!emailRegex.test(email)) {
             throw new Error("email: not validated");
         }
@@ -59,8 +64,3 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
     }
 }));
 module.exports = router;
-// Login create newtoken
-// newVolunteer.token = jwt.sign({
-//   userId: newVolunteer._id },
-//   "RANDOM_TOKEN_SECRET",
-//   { expiresIn: "24h" });
