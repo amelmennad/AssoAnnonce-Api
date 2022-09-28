@@ -64,7 +64,7 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
             },
         });
         yield newVolunteer.save();
-        res.json(newVolunteer);
+        res.status(200).json({ id: newVolunteer.id, token: newVolunteer.token });
     }
     catch (error) {
         res.status(400).json(error.message);

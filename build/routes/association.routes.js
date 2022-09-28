@@ -45,7 +45,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             !req.files.joafePublication.path) {
             throw new Error("not all need data");
         }
-        const { firstName, lastName, email, password, secondaryEstablishment, rnaNumber, sirene, sireneNumber, associationName, objectAssociation, headOffice, publicUtility, approvale, needInsurance, alsaceMoselleLaw, } = req.fields;
+        const { firstName, lastName, email, password, secondaryEstablishment, address, rnaNumber, sirene, sireneNumber, associationName, objectAssociation, headOffice, publicUtility, approvale, needInsurance, alsaceMoselleLaw, } = req.fields;
         const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
         const passwordLength = password.length;
         if (passwordLength < 8) {
@@ -70,6 +70,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             salt,
             token: uid2(16),
             secondaryEstablishment,
+            address,
             rnaNumber,
             sirene,
             sireneNumber,
@@ -92,7 +93,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
         }
         const uploadFile = (path) => __awaiter(void 0, void 0, void 0, function* () {
             const fileToUpload = yield cloudinary.uploader.upload(path, {
-                folder: `/57585h_resto-du-coeur/92250_17-boulevard-de-la-repupblique`,
+                folder: `/${rnaNumber}_${associationName}/${address}`,
             });
             const fileLink = fileToUpload.secure_url;
             return fileLink;
@@ -101,7 +102,6 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
         newAssociation.associationStatutes = yield uploadFile(req.files.associationStatutes.path);
         newAssociation.interiorRules = yield uploadFile(req.files.interiorRules.path);
         newAssociation.joafePublication = yield uploadFile(req.files.joafePublication.path);
-        console.log('file: association.routes.ts -> line 124 -> req.files.publicUtilityNotification?.type.includes("pdf")', req.files.publicUtilityNotification.type);
         if (publicUtility === "true") {
             if (req.files.publicUtilityNotification === undefined) {
                 throw new Error("files: publicUtilityNotification has not file");
@@ -137,7 +137,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             }
         }
         yield newAssociation.save();
-        res.json(newAssociation);
+        res.status(200).json({ id: newAssociation.id, token: newAssociation.token });
     }
     catch (err) {
         res.status(400).json(err.message);
@@ -145,12 +145,9 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
 }));
 router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log("file: association.routes.ts -> line 71 -> req.fields", req.fields);
-        console.log("file: association.routes.ts -> line 169 ->  req.fields.email", req.fields.email);
         const associationToCheck = yield association_model_1.Association.findOne({
             email: req.fields.email,
         });
-        console.log("file: association.routes.ts -> line 170 -> associationToCheck", associationToCheck);
         if (associationToCheck === null) {
             res.status(401).json({ message: "Unauthorized 1 !" });
         }
@@ -160,7 +157,7 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
                 if (compareResult) {
                     associationToCheck.token = uid2(16);
                     yield associationToCheck.save();
-                    res.status(200).json({ message: "you're login" });
+                    res.status(200).json({ id: associationToCheck.id, token: associationToCheck.token });
                 }
                 else {
                     res.status(401).json({ message: "Unauthorized 2 !" });

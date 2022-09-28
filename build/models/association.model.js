@@ -38,6 +38,7 @@ const AssociationSchema = new mongoose_1.Schema({
     associationStatutes: { type: String, required: true },
     interiorRules: { type: String, required: true },
     secondaryEstablishment: { type: Boolean, required: true },
+    address: { type: String, required: true },
     rnaNumber: { type: String, required: true },
     sirene: { type: String, required: true },
     sireneNumber: { type: String, required: true },
