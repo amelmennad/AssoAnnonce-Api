@@ -76,7 +76,7 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
             email: req.fields.email,
         });
         if (volunteerToCheck === null) {
-            res.status(401).json({ message: "Unauthorized !" });
+            res.status(401).json({ message: "unauthorized - mail not exist" });
         }
         else {
             const passwordClean = req.fields.password.replace(volunteerToCheck, "");
@@ -87,7 +87,7 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
                     res.status(200).json({ id: volunteerToCheck.id, token: volunteerToCheck.token });
                 }
                 else {
-                    res.status(401).json({ message: "Unauthorized !" });
+                    res.status(401).json({ message: "unauthorized - password not match" });
                 }
             }));
         }
