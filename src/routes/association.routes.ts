@@ -46,6 +46,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
       email,
       password,
       secondaryEstablishment,
+      address,
       rnaNumber,
       sirene,
       sireneNumber,
@@ -85,6 +86,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
       salt,
       token: uid2(16),
       secondaryEstablishment,
+      address,
       rnaNumber,
       sirene,
       sireneNumber,
@@ -111,7 +113,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
 
     const uploadFile = async (path: string): Promise<string> => {
       const fileToUpload = await cloudinary.uploader.upload(path, {
-        folder: `/57585h_resto-du-coeur/92250_17-boulevard-de-la-repupblique`,
+        folder: `/${rnaNumber}_${associationName}/${address}`,
       });
       const fileLink: string = fileToUpload.secure_url;
       return fileLink;
@@ -121,11 +123,6 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
     newAssociation.associationStatutes = await uploadFile(req.files.associationStatutes.path);
     newAssociation.interiorRules = await uploadFile(req.files.interiorRules.path);
     newAssociation.joafePublication = await uploadFile(req.files.joafePublication.path);
-
-    console.log(
-      'file: association.routes.ts -> line 124 -> req.files.publicUtilityNotification?.type.includes("pdf")',
-      req.files.publicUtilityNotification.type
-    );
 
     if (publicUtility === "true") {
       if (req.files.publicUtilityNotification === undefined) {
@@ -161,7 +158,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
     }
 
     await newAssociation.save();
-    res.json(newAssociation);
+    res.status(200).json({ id: newAssociation.id, token: newAssociation.token });
   } catch (err: any) {
     res.status(400).json(err.message);
   }
@@ -169,15 +166,9 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
 
 router.post("/api/association/login", async (req, res) => {
   try {
-    console.log("file: association.routes.ts -> line 71 -> req.fields", req.fields);
-    console.log("file: association.routes.ts -> line 169 ->  req.fields.email", req.fields.email);
     const associationToCheck: IAssociationSchema | null = await Association.findOne({
       email: req.fields.email,
     });
-    console.log(
-      "file: association.routes.ts -> line 170 -> associationToCheck",
-      associationToCheck
-    );
 
     if (associationToCheck === null) {
       res.status(401).json({ message: "Unauthorized 1 !" });
@@ -191,7 +182,7 @@ router.post("/api/association/login", async (req, res) => {
             associationToCheck.token = uid2(16);
             await associationToCheck.save();
 
-            res.status(200).json({ message: "you're login" });
+            res.status(200).json({ id: associationToCheck.id, token: associationToCheck.token });
           } else {
             res.status(401).json({ message: "Unauthorized 2 !" });
           }
