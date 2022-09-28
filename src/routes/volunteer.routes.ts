@@ -68,7 +68,7 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
 
     await newVolunteer.save();
 
-    res.json(newVolunteer);
+    res.status(200).json({ id: newVolunteer.id, token: newVolunteer.token });
   } catch (error: any) {
     res.status(400).json(error.message);
   }
