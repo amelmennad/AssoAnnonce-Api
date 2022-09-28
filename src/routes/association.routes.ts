@@ -158,7 +158,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
     }
 
     await newAssociation.save();
-    res.json(newAssociation);
+    res.status(200).json({ id: newAssociation.id, token: newAssociation.token });
   } catch (err: any) {
     res.status(400).json(err.message);
   }
@@ -182,7 +182,7 @@ router.post("/api/association/login", async (req, res) => {
             associationToCheck.token = uid2(16);
             await associationToCheck.save();
 
-            res.status(200).json({ message: "you're login" });
+            res.status(200).json({ id: associationToCheck.id, token: associationToCheck.token });
           } else {
             res.status(401).json({ message: "Unauthorized 2 !" });
           }

@@ -137,7 +137,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             }
         }
         yield newAssociation.save();
-        res.json(newAssociation);
+        res.status(200).json({ id: newAssociation.id, token: newAssociation.token });
     }
     catch (err) {
         res.status(400).json(err.message);
@@ -157,7 +157,7 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
                 if (compareResult) {
                     associationToCheck.token = uid2(16);
                     yield associationToCheck.save();
-                    res.status(200).json({ message: "you're login" });
+                    res.status(200).json({ id: associationToCheck.id, token: associationToCheck.token });
                 }
                 else {
                     res.status(401).json({ message: "Unauthorized 2 !" });
