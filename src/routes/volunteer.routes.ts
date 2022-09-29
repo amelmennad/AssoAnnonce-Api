@@ -1,4 +1,5 @@
 // eslint-disable-next-line import/no-import-module-exports
+import { record } from "zod";
 import { Volunteer, IVolunteerSchema } from "../models/volunteer.model";
 
 const express = require("express");
@@ -6,6 +7,8 @@ const bcrypt = require("bcrypt");
 const uid2 = require("uid2");
 
 const router = express.Router();
+
+const volunteerAuthenticated = require("../middlewares/volunteerAuthenticated");
 
 router.post("/api/volunteer/register", async (req, res): Promise<void> => {
   try {
@@ -99,6 +102,38 @@ router.post("/api/volunteer/login", async (req, res) => {
         }
       );
     }
+  } catch (error: any) {
+    res.status(400).json(error.message);
+  }
+});
+
+router.get("/api/volunteer/profil", volunteerAuthenticated, (req, res) => {
+  try {
+    interface IProfilData {
+      firstName: string;
+      lastName: string;
+      email: string;
+      birthday: string;
+      avatar?: string;
+      aboutme?: string;
+    }
+
+    const profilData: IProfilData = {
+      firstName: req.volunteer.firstName,
+      lastName: req.volunteer.lastName,
+      email: req.volunteer.email,
+      birthday: req.volunteer.birthday,
+    };
+
+    if (req.volunteer.avatar) {
+      profilData.avatar = req.volunteer.avatar;
+    }
+
+    if (req.volunteer.aboutme) {
+      profilData.aboutme = req.volunteer;
+    }
+
+    res.status(200).json(profilData);
   } catch (error: any) {
     res.status(400).json(error.message);
   }
