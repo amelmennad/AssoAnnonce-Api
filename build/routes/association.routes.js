@@ -16,6 +16,7 @@ const bcrypt = require("bcrypt");
 const uid2 = require("uid2");
 const cloudinary = require("cloudinary").v2;
 const router = express.Router();
+const associationAuthenticated = require("../middlewares/associationAuthenticated");
 router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const checkEmailUnique = yield association_model_1.Association.findOne({
@@ -169,4 +170,23 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
         res.status(500).json({ error: error.message });
     }
 }));
+router.get("/api/association/profil", associationAuthenticated, (req, res) => {
+    try {
+        const profilData = {
+            firstName: req.association.firstName,
+            lastName: req.association.lastName,
+            email: req.association.email,
+        };
+        if (req.association.avatar) {
+            profilData.avatar = req.association.avatar;
+        }
+        if (req.association.description) {
+            profilData.description = req.association.description;
+        }
+        res.status(200).json(profilData);
+    }
+    catch (error) {
+        res.status(400).json(error.message);
+    }
+});
 module.exports = router;

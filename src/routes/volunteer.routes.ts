@@ -1,5 +1,4 @@
 // eslint-disable-next-line import/no-import-module-exports
-import { record } from "zod";
 import { Volunteer, IVolunteerSchema } from "../models/volunteer.model";
 
 const express = require("express");
@@ -109,7 +108,7 @@ router.post("/api/volunteer/login", async (req, res) => {
 
 router.get("/api/volunteer/profil", volunteerAuthenticated, (req, res) => {
   try {
-    interface IProfilData {
+    interface IVolunteerProfilData {
       firstName: string;
       lastName: string;
       email: string;
@@ -118,7 +117,7 @@ router.get("/api/volunteer/profil", volunteerAuthenticated, (req, res) => {
       aboutme?: string;
     }
 
-    const profilData: IProfilData = {
+    const volunteerProfilData: IVolunteerProfilData = {
       firstName: req.volunteer.firstName,
       lastName: req.volunteer.lastName,
       email: req.volunteer.email,
@@ -126,14 +125,14 @@ router.get("/api/volunteer/profil", volunteerAuthenticated, (req, res) => {
     };
 
     if (req.volunteer.avatar) {
-      profilData.avatar = req.volunteer.avatar;
+      volunteerProfilData.avatar = req.volunteer.avatar;
     }
 
     if (req.volunteer.aboutme) {
-      profilData.aboutme = req.volunteer;
+      volunteerProfilData.aboutme = req.volunteer.aboutme;
     }
 
-    res.status(200).json(profilData);
+    res.status(200).json(volunteerProfilData);
   } catch (error: any) {
     res.status(400).json(error.message);
   }
