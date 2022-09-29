@@ -9,12 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// eslint-disable-next-line import/no-import-module-exports
 const volunteer_model_1 = require("../models/volunteer.model");
 const express = require("express");
 const bcrypt = require("bcrypt");
 const uid2 = require("uid2");
 const router = express.Router();
+const volunteerAuthenticated = require("../middlewares/volunteerAuthenticated");
 router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const checkEmailUnique = yield volunteer_model_1.Volunteer.findOne({
@@ -96,4 +96,24 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
         res.status(400).json(error.message);
     }
 }));
+router.get("/api/volunteer/profil", volunteerAuthenticated, (req, res) => {
+    try {
+        const profilData = {
+            firstName: req.volunteer.firstName,
+            lastName: req.volunteer.lastName,
+            email: req.volunteer.email,
+            birthday: req.volunteer.birthday,
+        };
+        if (req.volunteer.avatar) {
+            profilData.avatar = req.volunteer.avatar;
+        }
+        if (req.volunteer.aboutme) {
+            profilData.aboutme = req.volunteer;
+        }
+        res.status(200).json(profilData);
+    }
+    catch (error) {
+        res.status(400).json(error.message);
+    }
+});
 module.exports = router;
