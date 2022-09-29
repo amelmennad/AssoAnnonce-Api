@@ -7,6 +7,7 @@ const uid2 = require("uid2");
 const cloudinary = require("cloudinary").v2;
 
 const router = express.Router();
+const associationAuthenticated = require("../middlewares/associationAuthenticated");
 
 router.post("/api/association/register", async (req, res): Promise<void> => {
   try {
@@ -191,6 +192,36 @@ router.post("/api/association/login", async (req, res) => {
     }
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/api/association/profil", associationAuthenticated, (req, res) => {
+  try {
+    interface IProfilData {
+      firstName: string;
+      lastName: string;
+      email: string;
+      avatar?: string;
+      description?: string;
+    }
+
+    const profilData: IProfilData = {
+      firstName: req.association.firstName,
+      lastName: req.association.lastName,
+      email: req.association.email,
+    };
+
+    if (req.association.avatar) {
+      profilData.avatar = req.association.avatar;
+    }
+
+    if (req.association.description) {
+      profilData.description = req.association.description;
+    }
+
+    res.status(200).json(profilData);
+  } catch (error: any) {
+    res.status(400).json(error.message);
   }
 });
 

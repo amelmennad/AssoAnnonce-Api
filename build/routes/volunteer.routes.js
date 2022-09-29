@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// eslint-disable-next-line import/no-import-module-exports
 const volunteer_model_1 = require("../models/volunteer.model");
 const express = require("express");
 const bcrypt = require("bcrypt");
@@ -98,19 +99,19 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
 }));
 router.get("/api/volunteer/profil", volunteerAuthenticated, (req, res) => {
     try {
-        const profilData = {
+        const volunteerProfilData = {
             firstName: req.volunteer.firstName,
             lastName: req.volunteer.lastName,
             email: req.volunteer.email,
             birthday: req.volunteer.birthday,
         };
         if (req.volunteer.avatar) {
-            profilData.avatar = req.volunteer.avatar;
+            volunteerProfilData.avatar = req.volunteer.avatar;
         }
         if (req.volunteer.aboutme) {
-            profilData.aboutme = req.volunteer;
+            volunteerProfilData.aboutme = req.volunteer.aboutme;
         }
-        res.status(200).json(profilData);
+        res.status(200).json(volunteerProfilData);
     }
     catch (error) {
         res.status(400).json(error.message);
