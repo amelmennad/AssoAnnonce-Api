@@ -2,10 +2,8 @@ export {};
 const dotenv = require('dotenv');
 const path = require('path');
 const mongoose = require("mongoose");
-const cors = require("cors");
 const cloudinary = require("cloudinary").v2;
 
-// eslint-disable-next-line import/no-unresolved, import/extensions
 const app = require("./app");
 const config = require("../config");
 
@@ -16,8 +14,6 @@ cloudinary.config({
 });
 
 mongoose.connect(process.env.MONGODB_URL);
-
-app.use(cors());
 
 if (process.env.NODE_ENV !== "prod") {
   dotenv.config({
