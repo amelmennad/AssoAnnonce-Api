@@ -41,7 +41,7 @@ const AssociationSchema = new mongoose_1.Schema({
     address: { type: String, required: true },
     rnaNumber: { type: String, required: true },
     sirene: { type: String, required: true },
-    sireneNumber: { type: String, required: true },
+    sireneNumber: { type: String },
     associationName: { type: String, required: true },
     objectAssociation: { type: String, required: true },
     headOffice: { type: String, required: true },
