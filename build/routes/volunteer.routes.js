@@ -65,7 +65,9 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
             },
         });
         yield newVolunteer.save();
-        res.status(200).json({ id: newVolunteer.id, token: newVolunteer.token });
+        res
+            .status(200)
+            .json({ id: newVolunteer.id, token: newVolunteer.token, role: newVolunteer.role });
     }
     catch (error) {
         res.status(400).json(error.message);
@@ -85,7 +87,11 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
                 if (compareResult) {
                     volunteerToCheck.token = uid2(16);
                     yield volunteerToCheck.save();
-                    res.status(200).json({ id: volunteerToCheck.id, token: volunteerToCheck.token });
+                    res.status(200).json({
+                        id: volunteerToCheck.id,
+                        token: volunteerToCheck.token,
+                        role: volunteerToCheck.role,
+                    });
                 }
                 else {
                     res.status(401).json({ message: "unauthorized - password not match" });

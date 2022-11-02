@@ -70,7 +70,9 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
 
     await newVolunteer.save();
 
-    res.status(200).json({ id: newVolunteer.id, token: newVolunteer.token });
+    res
+      .status(200)
+      .json({ id: newVolunteer.id, token: newVolunteer.token, role: newVolunteer.role });
   } catch (error: any) {
     res.status(400).json(error.message);
   }
@@ -94,7 +96,11 @@ router.post("/api/volunteer/login", async (req, res) => {
             volunteerToCheck.token = uid2(16);
             await volunteerToCheck.save();
 
-            res.status(200).json({ id: volunteerToCheck.id, token: volunteerToCheck.token });
+            res.status(200).json({
+              id: volunteerToCheck.id,
+              token: volunteerToCheck.token,
+              role: volunteerToCheck.role,
+            });
           } else {
             res.status(401).json({ message: "unauthorized - password not match" });
           }
