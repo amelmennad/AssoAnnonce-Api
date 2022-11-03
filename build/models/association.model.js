@@ -53,6 +53,7 @@ const AssociationSchema = new mongoose_1.Schema({
     needInsurance: { type: Boolean, required: true },
     insuranceCopy: String,
     alsaceMoselleLaw: { type: Boolean, required: true },
+    cgu: { type: Boolean, require: true },
     description: String,
     avatar: String,
     timestamps: {
