@@ -16,22 +16,25 @@ const bcrypt = require("bcrypt");
 const uid2 = require("uid2");
 const cloudinary = require("cloudinary").v2;
 const router = express.Router();
+const associationAuthenticated = require("../middlewares/associationAuthenticated");
 router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log("file: association.routes.ts -> req.fields", req.fields);
+        console.log("file: association.routes.ts -> req.files", req.files);
         const checkEmailUnique = yield association_model_1.Association.findOne({
             email: req.fields.email,
         });
         if (checkEmailUnique !== null) {
             throw new Error("email exist");
         }
-        if (!req.fields.firstName ||
-            !req.fields.lastName ||
+        if (!req.fields.lastName ||
+            !req.fields.firstName ||
             !req.fields.email ||
             !req.fields.password ||
             !req.fields.secondaryEstablishment ||
+            !req.fields.address ||
             !req.fields.rnaNumber ||
             !req.fields.sirene ||
-            !req.fields.sireneNumber ||
             !req.fields.associationName ||
             !req.fields.objectAssociation ||
             !req.fields.headOffice ||
@@ -45,7 +48,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             !req.files.joafePublication.path) {
             throw new Error("not all need data");
         }
-        const { firstName, lastName, email, password, secondaryEstablishment, address, rnaNumber, sirene, sireneNumber, associationName, objectAssociation, headOffice, publicUtility, approvale, needInsurance, alsaceMoselleLaw, } = req.fields;
+        const { firstName, lastName, email, password, secondaryEstablishment, address, rnaNumber, sirene, associationName, objectAssociation, headOffice, publicUtility, approvale, needInsurance, alsaceMoselleLaw, } = req.fields;
         const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
         const passwordLength = password.length;
         if (passwordLength < 8) {
@@ -73,7 +76,6 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             address,
             rnaNumber,
             sirene,
-            sireneNumber,
             associationName,
             objectAssociation,
             headOffice,
@@ -125,6 +127,14 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
                 newAssociation.approvaleCertificate = yield uploadFile(req.files.approvaleCertificate.path);
             }
         }
+        if (sirene === "true") {
+            if (req.fields.sireneNumber === undefined) {
+                throw new Error("files: sireneNumber is require");
+            }
+            else {
+                newAssociation.sireneNumber = req.fields.sireneNumber;
+            }
+        }
         if (needInsurance === "true") {
             if (req.files.insuranceCopy === undefined) {
                 throw new Error("files: insuranceCopy has not file");
@@ -137,7 +147,9 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             }
         }
         yield newAssociation.save();
-        res.status(200).json({ id: newAssociation.id, token: newAssociation.token });
+        res
+            .status(200)
+            .json({ id: newAssociation.id, token: newAssociation.token, role: newAssociation.role });
     }
     catch (err) {
         res.status(400).json(err.message);
@@ -157,7 +169,11 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
                 if (compareResult) {
                     associationToCheck.token = uid2(16);
                     yield associationToCheck.save();
-                    res.status(200).json({ id: associationToCheck.id, token: associationToCheck.token });
+                    res.status(200).json({
+                        id: associationToCheck.id,
+                        token: associationToCheck.token,
+                        role: associationToCheck.role,
+                    });
                 }
                 else {
                     res.status(401).json({ message: "Unauthorized 2 !" });
@@ -169,4 +185,23 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
         res.status(500).json({ error: error.message });
     }
 }));
+router.get("/api/association/profil", associationAuthenticated, (req, res) => {
+    try {
+        const profilData = {
+            firstName: req.association.firstName,
+            lastName: req.association.lastName,
+            email: req.association.email,
+        };
+        if (req.association.avatar) {
+            profilData.avatar = req.association.avatar;
+        }
+        if (req.association.description) {
+            profilData.description = req.association.description;
+        }
+        res.status(200).json(profilData);
+    }
+    catch (error) {
+        res.status(400).json(error.message);
+    }
+});
 module.exports = router;

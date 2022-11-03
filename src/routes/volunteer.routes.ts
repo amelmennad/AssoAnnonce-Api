@@ -7,6 +7,8 @@ const uid2 = require("uid2");
 
 const router = express.Router();
 
+const volunteerAuthenticated = require("../middlewares/volunteerAuthenticated");
+
 router.post("/api/volunteer/register", async (req, res): Promise<void> => {
   try {
     const checkEmailUnique: IVolunteerSchema | null = await Volunteer.findOne({
@@ -68,7 +70,9 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
 
     await newVolunteer.save();
 
-    res.status(200).json({ id: newVolunteer.id, token: newVolunteer.token });
+    res
+      .status(200)
+      .json({ id: newVolunteer.id, token: newVolunteer.token, role: newVolunteer.role });
   } catch (error: any) {
     res.status(400).json(error.message);
   }
@@ -92,13 +96,49 @@ router.post("/api/volunteer/login", async (req, res) => {
             volunteerToCheck.token = uid2(16);
             await volunteerToCheck.save();
 
-            res.status(200).json({ id: volunteerToCheck.id, token: volunteerToCheck.token });
+            res.status(200).json({
+              id: volunteerToCheck.id,
+              token: volunteerToCheck.token,
+              role: volunteerToCheck.role,
+            });
           } else {
             res.status(401).json({ message: "unauthorized - password not match" });
           }
         }
       );
     }
+  } catch (error: any) {
+    res.status(400).json(error.message);
+  }
+});
+
+router.get("/api/volunteer/profil", volunteerAuthenticated, (req, res) => {
+  try {
+    interface IVolunteerProfilData {
+      firstName: string;
+      lastName: string;
+      email: string;
+      birthday: string;
+      avatar?: string;
+      aboutme?: string;
+    }
+
+    const volunteerProfilData: IVolunteerProfilData = {
+      firstName: req.volunteer.firstName,
+      lastName: req.volunteer.lastName,
+      email: req.volunteer.email,
+      birthday: req.volunteer.birthday,
+    };
+
+    if (req.volunteer.avatar) {
+      volunteerProfilData.avatar = req.volunteer.avatar;
+    }
+
+    if (req.volunteer.aboutme) {
+      volunteerProfilData.aboutme = req.volunteer.aboutme;
+    }
+
+    res.status(200).json(volunteerProfilData);
   } catch (error: any) {
     res.status(400).json(error.message);
   }

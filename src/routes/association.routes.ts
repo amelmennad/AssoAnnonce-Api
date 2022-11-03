@@ -7,24 +7,29 @@ const uid2 = require("uid2");
 const cloudinary = require("cloudinary").v2;
 
 const router = express.Router();
+const associationAuthenticated = require("../middlewares/associationAuthenticated");
 
 router.post("/api/association/register", async (req, res): Promise<void> => {
   try {
+    console.log("file: association.routes.ts -> req.fields", req.fields);
+    console.log("file: association.routes.ts -> req.files", req.files);
+
     const checkEmailUnique: IAssociationSchema | null = await Association.findOne({
       email: req.fields.email,
     });
     if (checkEmailUnique !== null) {
       throw new Error("email exist");
     }
+
     if (
-      !req.fields.firstName ||
       !req.fields.lastName ||
+      !req.fields.firstName ||
       !req.fields.email ||
       !req.fields.password ||
       !req.fields.secondaryEstablishment ||
+      !req.fields.address ||
       !req.fields.rnaNumber ||
       !req.fields.sirene ||
-      !req.fields.sireneNumber ||
       !req.fields.associationName ||
       !req.fields.objectAssociation ||
       !req.fields.headOffice ||
@@ -49,7 +54,6 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
       address,
       rnaNumber,
       sirene,
-      sireneNumber,
       associationName,
       objectAssociation,
       headOffice,
@@ -89,7 +93,6 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
       address,
       rnaNumber,
       sirene,
-      sireneNumber,
       associationName,
       objectAssociation,
       headOffice,
@@ -147,6 +150,13 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
       }
     }
 
+    if (sirene === "true") {
+      if (req.fields.sireneNumber === undefined) {
+        throw new Error("files: sireneNumber is require");
+      } else {
+        newAssociation.sireneNumber = req.fields.sireneNumber;
+      }
+    }
     if (needInsurance === "true") {
       if (req.files.insuranceCopy === undefined) {
         throw new Error("files: insuranceCopy has not file");
@@ -158,7 +168,9 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
     }
 
     await newAssociation.save();
-    res.status(200).json({ id: newAssociation.id, token: newAssociation.token });
+    res
+      .status(200)
+      .json({ id: newAssociation.id, token: newAssociation.token, role: newAssociation.role });
   } catch (err: any) {
     res.status(400).json(err.message);
   }
@@ -182,7 +194,11 @@ router.post("/api/association/login", async (req, res) => {
             associationToCheck.token = uid2(16);
             await associationToCheck.save();
 
-            res.status(200).json({ id: associationToCheck.id, token: associationToCheck.token });
+            res.status(200).json({
+              id: associationToCheck.id,
+              token: associationToCheck.token,
+              role: associationToCheck.role,
+            });
           } else {
             res.status(401).json({ message: "Unauthorized 2 !" });
           }
@@ -191,6 +207,36 @@ router.post("/api/association/login", async (req, res) => {
     }
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/api/association/profil", associationAuthenticated, (req, res) => {
+  try {
+    interface IProfilData {
+      firstName: string;
+      lastName: string;
+      email: string;
+      avatar?: string;
+      description?: string;
+    }
+
+    const profilData: IProfilData = {
+      firstName: req.association.firstName,
+      lastName: req.association.lastName,
+      email: req.association.email,
+    };
+
+    if (req.association.avatar) {
+      profilData.avatar = req.association.avatar;
+    }
+
+    if (req.association.description) {
+      profilData.description = req.association.description;
+    }
+
+    res.status(200).json(profilData);
+  } catch (error: any) {
+    res.status(400).json(error.message);
   }
 });
 
