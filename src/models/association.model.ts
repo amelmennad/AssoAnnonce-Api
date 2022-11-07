@@ -28,6 +28,7 @@ export interface IAssociationSchema extends Document {
   needInsurance: boolean | string;
   insuranceCopy?: string;
   alsaceMoselleLaw: boolean;
+  cgu: boolean;
   description?: string;
   avatar?: string;
   timestamps: {
@@ -64,6 +65,7 @@ const AssociationSchema: Schema = new Schema<IAssociationSchema>({
   needInsurance: { type: Boolean, required: true },
   insuranceCopy: String,
   alsaceMoselleLaw: { type: Boolean, required: true },
+  cgu: { type: Boolean, require: true },
   description: String,
   avatar: String,
   timestamps: {
