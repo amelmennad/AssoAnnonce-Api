@@ -28,10 +28,11 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
             !req.fields.lastName ||
             !req.fields.email ||
             !req.fields.password ||
-            !req.fields.birthday) {
+            !req.fields.birthday ||
+            !req.fields.cgu) {
             throw new Error("not all need data");
         }
-        const { firstName, lastName, email, password, birthday } = req.fields;
+        const { firstName, lastName, email, password, birthday, cgu } = req.fields;
         const diff = new Date(Date.now() - new Date(birthday).getTime());
         const age = Math.abs(diff.getUTCFullYear() - 1970);
         if (age < 16) {
@@ -48,6 +49,9 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
         const emailRegex = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
         if (!emailRegex.test(email)) {
             throw new Error("email: not validated");
+        }
+        if (!cgu) {
+            throw new Error("cgu: not validated");
         }
         const salt = yield bcrypt.genSalt(10);
         const hashed = yield bcrypt.hash(password, salt);

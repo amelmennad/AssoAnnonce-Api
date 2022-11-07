@@ -40,7 +40,8 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
       !req.files.powerDelegation.path ||
       !req.files.associationStatutes.path ||
       !req.files.interiorRules.path ||
-      !req.files.joafePublication.path
+      !req.files.joafePublication.path ||
+      !req.fields.cgu
     ) {
       throw new Error("not all need data");
     }
@@ -61,6 +62,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
       approvale,
       needInsurance,
       alsaceMoselleLaw,
+      cgu,
     }: IAssociationSchema = req.fields;
 
     const passwordRegex: RegExp = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
@@ -75,6 +77,10 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
     const emailRegex: RegExp = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
     if (!emailRegex.test(email)) {
       throw new Error("email: not validated");
+    }
+
+    if (!cgu) {
+      throw new Error("cgu: not validated");
     }
 
     const salt: string = await bcrypt.genSalt(10);
@@ -100,6 +106,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
       approvale,
       needInsurance,
       alsaceMoselleLaw,
+      cgu,
       timestamps: {
         createdAt: Date.now(),
       },

@@ -45,10 +45,11 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             !req.files.powerDelegation.path ||
             !req.files.associationStatutes.path ||
             !req.files.interiorRules.path ||
-            !req.files.joafePublication.path) {
+            !req.files.joafePublication.path ||
+            !req.fields.cgu) {
             throw new Error("not all need data");
         }
-        const { firstName, lastName, email, password, secondaryEstablishment, address, rnaNumber, sirene, associationName, objectAssociation, headOffice, publicUtility, approvale, needInsurance, alsaceMoselleLaw, } = req.fields;
+        const { firstName, lastName, email, password, secondaryEstablishment, address, rnaNumber, sirene, associationName, objectAssociation, headOffice, publicUtility, approvale, needInsurance, alsaceMoselleLaw, cgu, } = req.fields;
         const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
         const passwordLength = password.length;
         if (passwordLength < 8) {
@@ -60,6 +61,9 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
         const emailRegex = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
         if (!emailRegex.test(email)) {
             throw new Error("email: not validated");
+        }
+        if (!cgu) {
+            throw new Error("cgu: not validated");
         }
         const salt = yield bcrypt.genSalt(10);
         const hashed = yield bcrypt.hash(password, salt);
@@ -83,6 +87,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             approvale,
             needInsurance,
             alsaceMoselleLaw,
+            cgu,
             timestamps: {
                 createdAt: Date.now(),
             },
