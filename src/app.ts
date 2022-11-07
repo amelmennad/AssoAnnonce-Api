@@ -15,9 +15,11 @@ app.use(formidableMiddleware());
 
 const volunteerRoutes = require("./routes/volunteer.routes");
 const associationRoutes = require("./routes/association.routes");
+const missionRoutes = require("./routes/mission.routes");
 
 app.use(volunteerRoutes);
 app.use(associationRoutes);
+app.use(missionRoutes);
 
 app.get("/", (req, res) => {
   res.header("crossorigin", "true");
@@ -30,3 +32,4 @@ app.all("*", (req, res) => {
 });
 
 module.exports = app;
+export {};
