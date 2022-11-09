@@ -208,8 +208,8 @@ router.put("/api/volunteer/update/:id", volunteerAuthenticated, (req, res) => __
 }));
 router.delete("/api/volunteer/delete/:id", volunteerAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const mission = yield volunteer_model_1.Volunteer.findByIdAndDelete(req.params.id);
-        if (!mission) {
+        const volunteer = yield volunteer_model_1.Volunteer.findByIdAndDelete(req.params.id);
+        if (!volunteer) {
             res.status(404).json({ message: "Volunteer not found" });
         }
         else {

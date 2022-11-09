@@ -247,8 +247,8 @@ router.delete(
   volunteerAuthenticated,
   async (req, res): Promise<void> => {
     try {
-      const mission: IVolunteerSchema[] | null = await Volunteer.findByIdAndDelete(req.params.id);
-      if (!mission) {
+      const volunteer: IVolunteerSchema[] | null = await Volunteer.findByIdAndDelete(req.params.id);
+      if (!volunteer) {
         res.status(404).json({ message: "Volunteer not found" });
       } else {
         res.json({ message: "Delete Volunteer" });
