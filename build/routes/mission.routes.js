@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // eslint-disable-next-line import/no-import-module-exports
 const mission_model_1 = require("../models/mission.model");
 const express = require("express");
+const associationAuthenticated = require("../middlewares/associationAuthenticated");
 const router = express.Router();
 router.get("/api/associationsss", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -21,7 +22,7 @@ router.get("/api/associationsss", (req, res) => __awaiter(void 0, void 0, void 0
         res.status(400).json(error.message);
     }
 }));
-router.post("/api/association/mission/create", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/api/association/mission/create", associationAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("file: mission.routes.ts -> line 19 -> req.fields", req.fields);
         if (!req.fields.missionTitle ||

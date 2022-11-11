@@ -2,28 +2,31 @@
 import { Association, IAssociationSchema } from "../models/association.model";
 
 const volunteerAuthenticated = async (req, res, next) => {
-  if (req.headers.authorization) {
-    const bearerToken = req.headers.authorization.replace("Bearer ", "");
+  try {
+    if (req.headers.authorization) {
+      const bearerToken = req.headers.authorization.replace("Bearer ", "");
 
-    const association: IAssociationSchema | null = await Association.findOne({
-      token: bearerToken,
-    });
+      const association: IAssociationSchema | null = await Association.findOne({
+        token: bearerToken,
+      });
 
-
-    if (req.params.id) {
-      if (association?.id !== req.params.id) {
-        res.status(401).json({ error: "unauthorized" });
+      if (req.params.id) {
+        if (association?.id !== req.params.id) {
+          throw new Error("unauthorized");
+        }
       }
-    }
 
-    if (association) {
-      req.association = association;
-      next();
+      if (association) {
+        req.association = association;
+        next();
+      } else {
+        throw new Error("not exist token");
+      }
     } else {
-      res.status(401).json({ error: "not exist token" });
+      throw new Error("not send token");
     }
-  } else {
-    res.status(401).json({ error: "not send token" });
+  } catch (error: any) {
+    res.status(401).json(error.message);
   }
 };
 
