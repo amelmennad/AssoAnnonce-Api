@@ -166,7 +166,7 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
             email: req.fields.email,
         });
         if (associationToCheck === null) {
-            res.status(401).json({ message: "Unauthorized 1 !" });
+            throw new Error("Unauthorized");
         }
         else {
             const passwordClean = req.fields.password.replace(associationToCheck.salt, "");

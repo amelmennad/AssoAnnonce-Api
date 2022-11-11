@@ -190,7 +190,8 @@ router.post("/api/association/login", async (req, res) => {
     });
 
     if (associationToCheck === null) {
-      res.status(401).json({ message: "Unauthorized 1 !" });
+          throw new Error("Unauthorized");
+
     } else {
       const passwordClean = req.fields.password.replace(associationToCheck.salt, "");
       await bcrypt.compare(
