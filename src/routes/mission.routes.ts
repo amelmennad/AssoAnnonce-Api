@@ -1,4 +1,6 @@
 // eslint-disable-next-line import/no-import-module-exports
+import { Association } from "../models/association.model";
+// eslint-disable-next-line import/no-import-module-exports
 import { IMissionSchema, Mission } from "../models/mission.model";
 
 const express = require("express");
@@ -6,13 +8,6 @@ const express = require("express");
 const associationAuthenticated = require("../middlewares/associationAuthenticated");
 
 const router = express.Router();
-router.get("/api/associationsss", async (req, res): Promise<void> => {
-  try {
-    res.status(200).json("{ id: newMission.id }");
-  } catch (error: any) {
-    res.status(400).json(error.message);
-  }
-});
 
 router.post(
   "/api/association/mission/create",
@@ -73,5 +68,69 @@ router.post(
     }
   }
 );
+
+router.get("/api/association/missions", async (req, res): Promise<void> => {
+  try {
+    // gerer la notion de date n'affichier que les mission actuel ou a venir
+
+    const allMission: IMissionSchema[] | null = await Mission.find().populate("association");
+    res.status(200).json(allMission);
+    // if exite redirect vers l'annonce
+  } catch (error: any) {
+    res.status(400).json(error.message);
+    // else redirect 404
+  }
+});
+
+router.get("/api/association/mission/:id", async (req, res): Promise<void> => {
+  try {
+    // gerer la notion de date n'affichier que les mission actuel ou a venir sauf cas authentification association see inside acrhiver
+
+    const mission: IMissionSchema[] | null = await Mission.findById(req.params.id).populate(
+      "association"
+    );
+    console.log("file: mission.routes.ts -> line 83 -> allMission", mission);
+
+    if (mission === null) {
+      res.status(404).json({ message: "mission not found" });
+      // TODO : redirect 404
+    }
+    res.status(200).json(mission);
+  } catch (error: any) {
+    res.status(400).json(error.message);
+  }
+});
+
+router.get("/api/association/missions/:associationId", async (req, res): Promise<void> => {
+  try {
+    // gerer la notion de date n'affichier que les mission actuel ou a venir
+
+    const allMissionOneAssociation: IMissionSchema[] | null = await Mission.find({
+      association: req.params.associationId,
+    }).populate("association");
+    console.log("file: mission.routes.ts -> line 83 -> allMission", allMissionOneAssociation);
+
+    if (allMissionOneAssociation === null) {
+      res.status(200).json({ message: "empty mission for this association" });
+      // TODO : afficher message Aucune mission en cours
+    }
+    res.status(200).json(allMissionOneAssociation);
+  } catch (error: any) {
+    res.status(400).json(error.message);
+  }
+});
+
+// router.delete("/api/association/mission/delete/:id", async (req, res): Promise<void> => {
+//   try {
+//     const mission: IMissionSchema[] | null = await Mission.findByIdAndDelete(req.params.id);
+//     if (!mission) {
+//       res.status(404).json({ message: "Mission not found" });
+//     } else {
+//       return res.json({ message: "Delete mission" });
+//     }
+//   } catch (error: any) {
+//     res.status(400).json({ message: "Error to delete mission" });
+//   }
+// });
 
 module.exports = router;

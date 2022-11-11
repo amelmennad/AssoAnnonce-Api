@@ -33,6 +33,10 @@ const MissionSchema = new mongoose_1.Schema({
     endDate: { type: String, required: true },
     groupedApplications: { type: Boolean, required: true },
     limiteGroupcandidacy: { type: Number },
+    association: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "Association",
+    },
     timestamps: {
         createdAt: String,
         updatedAt: String,
