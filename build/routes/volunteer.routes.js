@@ -88,7 +88,7 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
             email: req.fields.email,
         });
         if (volunteerToCheck === null) {
-            res.status(401).json({ message: "unauthorized - mail not exist" });
+            throw new Error("unauthorized - mail not exist");
         }
         else {
             const passwordClean = req.fields.password.replace(volunteerToCheck, "");
@@ -103,7 +103,7 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
                     });
                 }
                 else {
-                    res.status(401).json({ message: "unauthorized - password not match" });
+                    throw new Error("unauthorized -  password not match");
                 }
             }));
         }
@@ -138,79 +138,74 @@ router.put("/api/volunteer/update/:id", volunteerAuthenticated, (req, res) => __
         const volunteerUpdate = req.volunteer;
         yield bcrypt.compare(req.fields.currentPassword, volunteerUpdate.password, (error, compareResult) => __awaiter(void 0, void 0, void 0, function* () {
             if (compareResult) {
-                try {
-                    if (req.fields.email) {
-                        const { email } = req.fields;
-                        const checkEmailUnique = yield volunteer_model_1.Volunteer.findOne({
-                            email,
-                        });
-                        if (checkEmailUnique !== null) {
-                            throw new Error("email exist");
-                        }
-                        const emailRegex = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
-                        if (!emailRegex.test(email)) {
-                            throw new Error("email: not validated");
-                        }
-                        volunteerUpdate.email = email;
+                if (req.fields.email) {
+                    const { email } = req.fields;
+                    const checkEmailUnique = yield volunteer_model_1.Volunteer.findOne({
+                        email,
+                    });
+                    if (checkEmailUnique !== null) {
+                        throw new Error("email exist");
                     }
-                    if (req.fields.password) {
-                        const { password } = req.fields;
-                        const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
-                        const passwordLength = password.length;
-                        if (!passwordRegex.test(password)) {
-                            throw new Error("password: not validated");
-                        }
-                        if (passwordLength < 8) {
-                            throw new Error("password: too short");
-                        }
-                        const salt = yield bcrypt.genSalt(10);
-                        const hashed = yield bcrypt.hash(password, salt);
-                        volunteerUpdate.password = hashed;
+                    const emailRegex = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
+                    if (!emailRegex.test(email)) {
+                        throw new Error("email: not validated");
                     }
-                    if (req.fields.aboutme) {
-                        const { aboutme } = req.fields;
-                        volunteerUpdate.aboutme = aboutme;
+                    volunteerUpdate.email = email;
+                }
+                if (req.fields.password) {
+                    const { password } = req.fields;
+                    const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
+                    const passwordLength = password.length;
+                    if (!passwordRegex.test(password)) {
+                        throw new Error("password: not validated");
                     }
-                    if (req.files.avatar) {
-                        const { avatar } = req.files;
-                        if (avatar.type.includes("jpg") ||
-                            avatar.type.includes("jpeg") ||
-                            avatar.type.includes("image/png")) {
-                            const uploadFile = (path) => __awaiter(void 0, void 0, void 0, function* () {
-                                const fileToUpload = yield cloudinary.uploader.upload(path, {
-                                    folder: `/volunteer/`,
-                                });
-                                const fileLink = fileToUpload.secure_url;
-                                return fileLink;
+                    if (passwordLength < 8) {
+                        throw new Error("password: too short");
+                    }
+                    const salt = yield bcrypt.genSalt(10);
+                    const hashed = yield bcrypt.hash(password, salt);
+                    volunteerUpdate.password = hashed;
+                }
+                if (req.fields.aboutme) {
+                    const { aboutme } = req.fields;
+                    volunteerUpdate.aboutme = aboutme;
+                }
+                if (req.files.avatar) {
+                    const { avatar } = req.files;
+                    if (avatar.type.includes("jpg") ||
+                        avatar.type.includes("jpeg") ||
+                        avatar.type.includes("image/png")) {
+                        const uploadFile = (path) => __awaiter(void 0, void 0, void 0, function* () {
+                            const fileToUpload = yield cloudinary.uploader.upload(path, {
+                                folder: `/volunteer/`,
                             });
-                            volunteerUpdate.avatar = yield uploadFile(req.files.avatar.path);
-                            console.log("file: volunteer.routes.ts -> line 222 -> volunteerUpdate.avatar", volunteerUpdate.avatar);
-                        }
-                        else {
-                            throw new Error("files: bad type");
-                        }
+                            const fileLink = fileToUpload.secure_url;
+                            return fileLink;
+                        });
+                        volunteerUpdate.avatar = yield uploadFile(req.files.avatar.path);
+                        console.log("file: volunteer.routes.ts -> line 222 -> volunteerUpdate.avatar", volunteerUpdate.avatar);
                     }
-                    yield volunteerUpdate.save();
-                    res.status(200).json(volunteerUpdate);
+                    else {
+                        throw new Error("files: bad type");
+                    }
                 }
-                catch (err) {
-                    res.status(400).json(err.message);
-                }
+                yield volunteerUpdate.save();
+                res.status(200).json(volunteerUpdate);
             }
             else {
-                res.status(401).json({ message: "unauthorized - password not match" });
+                throw new Error("unauthorized - password not match");
             }
         }));
     }
     catch (error) {
-        res.status(400).json(error.message);
+        res.status(401).json(error.message);
     }
 }));
 router.delete("/api/volunteer/delete/:id", volunteerAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const volunteerToCheck = yield volunteer_model_1.Volunteer.findById(req.params.id);
         if (volunteerToCheck === null) {
-            res.status(401).json({ message: "unauthorized - id not exist" });
+            throw new Error("unauthorized - id not exist");
         }
         else {
             yield bcrypt.compare(req.fields.currentPassword, volunteerToCheck.password, (err, compareResult) => __awaiter(void 0, void 0, void 0, function* () {
@@ -219,7 +214,7 @@ router.delete("/api/volunteer/delete/:id", volunteerAuthenticated, (req, res) =>
                     res.json({ message: "Delete Volunteer" });
                 }
                 else {
-                    res.status(401).json({ message: "unauthorized - password not match" });
+                    throw new Error("unauthorized - password not match");
                 }
             }));
         }

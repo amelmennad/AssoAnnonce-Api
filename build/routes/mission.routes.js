@@ -10,39 +10,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // eslint-disable-next-line import/no-import-module-exports
-const association_model_1 = require("../models/association.model");
-// eslint-disable-next-line import/no-import-module-exports
 const mission_model_1 = require("../models/mission.model");
 const express = require("express");
+const associationAuthenticated = require("../middlewares/associationAuthenticated");
 const router = express.Router();
-router.post("/api/association/mission/create", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/api/association/mission/create", associationAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log("file: mission.routes.ts -> line 19 -> req.fields", req.fields);
         if (!req.fields.missionTitle ||
             !req.fields.place ||
             !req.fields.jobDescription ||
             !req.fields.startDate ||
-            !req.fields.endDate ||
-            !req.fields.association) {
+            !req.fields.endDate) {
             throw new Error("not all need data");
         }
-        const { missionTitle, place, jobDescription, startDate, endDate, groupedApplications, association, } = req.fields;
-        const associationCheck = yield association_model_1.Association.findById(association);
-        const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
-        if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
-            throw new Error("date: not validated");
-        }
-        const nowTimestamp = Date.now();
-        const startDateTimestamp = new Date(startDate).getTime();
-        const endDateTimestamp = new Date(endDate).getTime();
-        if (startDateTimestamp < nowTimestamp ||
-            endDateTimestamp < nowTimestamp ||
-            startDateTimestamp > endDateTimestamp) {
-            throw new Error("date: not validated");
-        }
-        if (associationCheck === null) {
-            res.status(401).json({ message: "unauthorized - association not exist" });
-            // TODO : logout in front
-        }
+        const { missionTitle, place, jobDescription, startDate, endDate, groupedApplications, } = req.fields;
         if (missionTitle.length < 20) {
             throw new Error("title too short");
         }
@@ -62,14 +44,12 @@ router.post("/api/association/mission/create", (req, res) => __awaiter(void 0, v
             startDate,
             endDate,
             groupedApplications,
-            association,
             timestamps: {
                 createdAt: Date.now(),
             },
         });
         yield newMission.save();
         res.status(200).json({ id: newMission.id });
-        // res.status(200).json(newMission);
     }
     catch (error) {
         res.status(400).json(error.message);
@@ -119,18 +99,16 @@ router.get("/api/association/missions/:associationId", (req, res) => __awaiter(v
         res.status(400).json(error.message);
     }
 }));
-router.delete("/api/association/mission/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const mission = yield mission_model_1.Mission.findByIdAndDelete(req.params.id);
-        if (!mission) {
-            res.status(404).json({ message: "Mission not found" });
-        }
-        else {
-            return res.json({ message: "Delete mission" });
-        }
-    }
-    catch (error) {
-        res.status(400).json({ message: "Error to delete mission" });
-    }
-}));
+// router.delete("/api/association/mission/delete/:id", async (req, res): Promise<void> => {
+//   try {
+//     const mission: IMissionSchema[] | null = await Mission.findByIdAndDelete(req.params.id);
+//     if (!mission) {
+//       res.status(404).json({ message: "Mission not found" });
+//     } else {
+//       return res.json({ message: "Delete mission" });
+//     }
+//   } catch (error: any) {
+//     res.status(400).json({ message: "Error to delete mission" });
+//   }
+// });
 module.exports = router;

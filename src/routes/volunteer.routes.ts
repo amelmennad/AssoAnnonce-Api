@@ -95,7 +95,7 @@ router.post("/api/volunteer/login", async (req, res) => {
     });
 
     if (volunteerToCheck === null) {
-      res.status(401).json({ message: "unauthorized - mail not exist" });
+      throw new Error("unauthorized - mail not exist");
     } else {
       const passwordClean = req.fields.password.replace(volunteerToCheck, "");
       await bcrypt.compare(
@@ -112,7 +112,7 @@ router.post("/api/volunteer/login", async (req, res) => {
               role: volunteerToCheck.role,
             });
           } else {
-            res.status(401).json({ message: "unauthorized - password not match" });
+            throw new Error("unauthorized -  password not match");
           }
         }
       );
@@ -165,80 +165,76 @@ router.put("/api/volunteer/update/:id", volunteerAuthenticated, async (req, res)
       volunteerUpdate.password,
       async (error: any, compareResult: boolean): Promise<void> => {
         if (compareResult) {
-          try {
-            if (req.fields.email) {
-              const { email } = req.fields;
-              const checkEmailUnique: IVolunteerSchema | null = await Volunteer.findOne({
-                email,
-              });
-              if (checkEmailUnique !== null) {
-                throw new Error("email exist");
-              }
-              const emailRegex: RegExp = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
-              if (!emailRegex.test(email)) {
-                throw new Error("email: not validated");
-              }
-              volunteerUpdate.email = email;
+          if (req.fields.email) {
+            const { email } = req.fields;
+            const checkEmailUnique: IVolunteerSchema | null = await Volunteer.findOne({
+              email,
+            });
+            if (checkEmailUnique !== null) {
+              throw new Error("email exist");
             }
-
-            if (req.fields.password) {
-              const { password } = req.fields;
-              const passwordRegex: RegExp =
-                /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
-              const passwordLength: Number = password.length;
-              if (!passwordRegex.test(password)) {
-                throw new Error("password: not validated");
-              }
-              if (passwordLength < 8) {
-                throw new Error("password: too short");
-              }
-              const salt: string = await bcrypt.genSalt(10);
-              const hashed: string = await bcrypt.hash(password, salt);
-              volunteerUpdate.password = hashed;
+            const emailRegex: RegExp = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
+            if (!emailRegex.test(email)) {
+              throw new Error("email: not validated");
             }
-
-            if (req.fields.aboutme) {
-              const { aboutme } = req.fields;
-              volunteerUpdate.aboutme = aboutme;
-            }
-
-            if (req.files.avatar) {
-              const { avatar } = req.files;
-              if (
-                avatar.type.includes("jpg") ||
-                avatar.type.includes("jpeg") ||
-                avatar.type.includes("image/png")
-              ) {
-                const uploadFile = async (path: string): Promise<string> => {
-                  const fileToUpload = await cloudinary.uploader.upload(path, {
-                    folder: `/volunteer/`,
-                  });
-                  const fileLink: string = fileToUpload.secure_url;
-                  return fileLink;
-                };
-
-                volunteerUpdate.avatar = await uploadFile(req.files.avatar.path);
-                console.log(
-                  "file: volunteer.routes.ts -> line 222 -> volunteerUpdate.avatar",
-                  volunteerUpdate.avatar
-                );
-              } else {
-                throw new Error("files: bad type");
-              }
-            }
-
-            await volunteerUpdate.save();
-            res.status(200).json(volunteerUpdate);
-          } catch (err: any) {
-            res.status(400).json(err.message);
+            volunteerUpdate.email = email;
           }
+
+          if (req.fields.password) {
+            const { password } = req.fields;
+            const passwordRegex: RegExp =
+              /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
+            const passwordLength: Number = password.length;
+            if (!passwordRegex.test(password)) {
+              throw new Error("password: not validated");
+            }
+            if (passwordLength < 8) {
+              throw new Error("password: too short");
+            }
+            const salt: string = await bcrypt.genSalt(10);
+            const hashed: string = await bcrypt.hash(password, salt);
+            volunteerUpdate.password = hashed;
+          }
+
+          if (req.fields.aboutme) {
+            const { aboutme } = req.fields;
+            volunteerUpdate.aboutme = aboutme;
+          }
+
+          if (req.files.avatar) {
+            const { avatar } = req.files;
+            if (
+              avatar.type.includes("jpg") ||
+              avatar.type.includes("jpeg") ||
+              avatar.type.includes("image/png")
+            ) {
+              const uploadFile = async (path: string): Promise<string> => {
+                const fileToUpload = await cloudinary.uploader.upload(path, {
+                  folder: `/volunteer/`,
+                });
+                const fileLink: string = fileToUpload.secure_url;
+                return fileLink;
+              };
+
+              volunteerUpdate.avatar = await uploadFile(req.files.avatar.path);
+              console.log(
+                "file: volunteer.routes.ts -> line 222 -> volunteerUpdate.avatar",
+                volunteerUpdate.avatar
+              );
+            } else {
+              throw new Error("files: bad type");
+            }
+          }
+
+          await volunteerUpdate.save();
+          res.status(200).json(volunteerUpdate);
         } else {
-          res.status(401).json({ message: "unauthorized - password not match" });
+          throw new Error("unauthorized - password not match");
         }
       }
     );
   } catch (error: any) {
-    res.status(400).json(error.message);
+    res.status(401).json(error.message);
   }
 });
 
@@ -249,7 +245,7 @@ router.delete(
     try {
       const volunteerToCheck: IVolunteerSchema | null = await Volunteer.findById(req.params.id);
       if (volunteerToCheck === null) {
-        res.status(401).json({ message: "unauthorized - id not exist" });
+        throw new Error("unauthorized - id not exist");
       } else {
         await bcrypt.compare(
           req.fields.currentPassword,
@@ -259,7 +255,7 @@ router.delete(
               await Volunteer.findByIdAndDelete(req.params.id);
               res.json({ message: "Delete Volunteer" });
             } else {
-              res.status(401).json({ message: "unauthorized - password not match" });
+              throw new Error("unauthorized - password not match");
             }
           }
         );
