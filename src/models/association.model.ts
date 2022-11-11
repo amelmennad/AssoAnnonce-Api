@@ -30,7 +30,7 @@ export interface IAssociationSchema extends Document {
   alsaceMoselleLaw: boolean;
   cgu: boolean;
   description?: string;
-  avatar?: string;
+  logo?: string;
   timestamps: {
     createdAt?: string;
     updatedAt?: string;
@@ -67,7 +67,7 @@ const AssociationSchema: Schema = new Schema<IAssociationSchema>({
   alsaceMoselleLaw: { type: Boolean, required: true },
   cgu: { type: Boolean, require: true },
   description: String,
-  avatar: String,
+  logo: String,
   timestamps: {
     createdAt: String,
     updatedAt: String,

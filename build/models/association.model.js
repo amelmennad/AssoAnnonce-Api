@@ -55,7 +55,7 @@ const AssociationSchema = new mongoose_1.Schema({
     alsaceMoselleLaw: { type: Boolean, required: true },
     cgu: { type: Boolean, require: true },
     description: String,
-    avatar: String,
+    logo: String,
     timestamps: {
         createdAt: String,
         updatedAt: String,

@@ -247,11 +247,22 @@ router.delete(
   volunteerAuthenticated,
   async (req, res): Promise<void> => {
     try {
-      const volunteer: IVolunteerSchema[] | null = await Volunteer.findByIdAndDelete(req.params.id);
-      if (!volunteer) {
-        res.status(404).json({ message: "Volunteer not found" });
+      const volunteerToCheck: IVolunteerSchema | null = await Volunteer.findById(req.params.id);
+      if (volunteerToCheck === null) {
+        res.status(401).json({ message: "unauthorized - id not exist" });
       } else {
-        res.json({ message: "Delete Volunteer" });
+        await bcrypt.compare(
+          req.fields.currentPassword,
+          volunteerToCheck.password,
+          async (err: any, compareResult: boolean): Promise<void> => {
+            if (compareResult) {
+              await Volunteer.findByIdAndDelete(req.params.id);
+              res.json({ message: "Delete Volunteer" });
+            } else {
+              res.status(401).json({ message: "unauthorized - password not match" });
+            }
+          }
+        );
       }
     } catch (error: any) {
       res.status(400).json({ message: "Error to delete Volunteer" });
