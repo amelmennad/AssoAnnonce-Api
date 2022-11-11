@@ -93,17 +93,22 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
         else {
             const passwordClean = req.fields.password.replace(volunteerToCheck, "");
             yield bcrypt.compare(passwordClean, volunteerToCheck.password, (err, compareResult) => __awaiter(void 0, void 0, void 0, function* () {
-                if (compareResult) {
-                    volunteerToCheck.token = uid2(16);
-                    yield volunteerToCheck.save();
-                    res.status(200).json({
-                        id: volunteerToCheck.id,
-                        token: volunteerToCheck.token,
-                        role: volunteerToCheck.role,
-                    });
+                try {
+                    if (compareResult) {
+                        volunteerToCheck.token = uid2(16);
+                        yield volunteerToCheck.save();
+                        res.status(200).json({
+                            id: volunteerToCheck.id,
+                            token: volunteerToCheck.token,
+                            role: volunteerToCheck.role,
+                        });
+                    }
+                    else {
+                        throw new Error("unauthorized - password not match");
+                    }
                 }
-                else {
-                    throw new Error("unauthorized - password not match");
+                catch (e) {
+                    res.status(401).json(e.message);
                 }
             }));
         }

@@ -102,18 +102,22 @@ router.post("/api/volunteer/login", async (req, res) => {
         passwordClean,
         volunteerToCheck.password,
         async (err: any, compareResult: boolean): Promise<void> => {
-          if (compareResult) {
-            volunteerToCheck.token = uid2(16);
-            await volunteerToCheck.save();
+           try {
+             if (compareResult) {
+               volunteerToCheck.token = uid2(16);
+               await volunteerToCheck.save();
 
-            res.status(200).json({
-              id: volunteerToCheck.id,
-              token: volunteerToCheck.token,
-              role: volunteerToCheck.role,
-            });
-          } else {
-            throw new Error("unauthorized - password not match");
-          }
+               res.status(200).json({
+                 id: volunteerToCheck.id,
+                 token: volunteerToCheck.token,
+                 role: volunteerToCheck.role,
+               });
+             } else {
+               throw new Error("unauthorized - password not match");
+             }
+           } catch (e: any) {
+             res.status(401).json(e.message);
+           }
         }
       );
     }
