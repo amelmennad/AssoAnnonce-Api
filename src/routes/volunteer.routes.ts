@@ -246,11 +246,8 @@ router.delete(
   "/api/volunteer/delete/:id",
   volunteerAuthenticated,
   async (req, res): Promise<void> => {
-
-    
     try {
       const volunteerToCheck: IVolunteerSchema | null = await Volunteer.findById(req.params.id);
-
       if (volunteerToCheck === null) {
         res.status(401).json({ message: "unauthorized - id not exist" });
       } else {
@@ -259,14 +256,8 @@ router.delete(
           volunteerToCheck.password,
           async (err: any, compareResult: boolean): Promise<void> => {
             if (compareResult) {
-              const volunteer: IVolunteerSchema[] | null = await Volunteer.findByIdAndDelete(
-                req.params.id
-              );
-              if (!volunteer) {
-                res.status(404).json({ message: "Volunteer not found" });
-              } else {
-                res.json({ message: "Delete Volunteer" });
-              }
+              await Volunteer.findByIdAndDelete(req.params.id);
+              res.json({ message: "Delete Volunteer" });
             } else {
               res.status(401).json({ message: "unauthorized - password not match" });
             }

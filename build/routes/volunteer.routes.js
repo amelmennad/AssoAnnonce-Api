@@ -215,13 +215,8 @@ router.delete("/api/volunteer/delete/:id", volunteerAuthenticated, (req, res) =>
         else {
             yield bcrypt.compare(req.fields.currentPassword, volunteerToCheck.password, (err, compareResult) => __awaiter(void 0, void 0, void 0, function* () {
                 if (compareResult) {
-                    const volunteer = yield volunteer_model_1.Volunteer.findByIdAndDelete(req.params.id);
-                    if (!volunteer) {
-                        res.status(404).json({ message: "Volunteer not found" });
-                    }
-                    else {
-                        res.json({ message: "Delete Volunteer" });
-                    }
+                    yield volunteer_model_1.Volunteer.findByIdAndDelete(req.params.id);
+                    res.json({ message: "Delete Volunteer" });
                 }
                 else {
                     res.status(401).json({ message: "unauthorized - password not match" });

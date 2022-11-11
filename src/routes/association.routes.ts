@@ -88,7 +88,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
 
     const newAssociation: IAssociationSchema = new Association({
       role: "association",
-      status: "validate", // pending, validate, reject
+      status: "validate", // pending, validate, reject, archive
       firstName,
       lastName,
       email,
@@ -223,7 +223,7 @@ router.get("/api/association/profil", associationAuthenticated, (req, res) => {
       firstName: string;
       lastName: string;
       email: string;
-      avatar?: string;
+      logo?: string;
       description?: string;
     }
 
@@ -233,8 +233,8 @@ router.get("/api/association/profil", associationAuthenticated, (req, res) => {
       email: req.association.email,
     };
 
-    if (req.association.avatar) {
-      profilData.avatar = req.association.avatar;
+    if (req.association.logo) {
+      profilData.logo = req.association.logo;
     }
 
     if (req.association.description) {
@@ -247,23 +247,121 @@ router.get("/api/association/profil", associationAuthenticated, (req, res) => {
   }
 });
 
-// router.delete(
-//   "/api/association/delete/:id",
-//   associationAuthenticated,
-//   async (req, res): Promise<void> => {
-//     try {
-//       const association: IAssociationSchema[] | null = await Association.findByIdAndDelete(
-//         req.params.id
-//       );
-//       if (!association) {
-//         res.status(404).json({ message: "Association not found" });
-//       } else {
-//         res.json({ message: "Delete Association" });
-//       }
-//     } catch (error: any) {
-//       res.status(400).json({ message: "Error to delete Association" });
-//     }
-//   }
-// );
+router.put("/api/association/update/:id", associationAuthenticated, async (req, res) => {
+  try {
+    const associationUpdate = req.association;
+
+    await bcrypt.compare(
+      req.fields.currentPassword,
+      associationUpdate.password,
+      async (error: any, compareResult: boolean): Promise<void> => {
+        if (compareResult) {
+          try {
+            if (req.fields.email) {
+              const { email } = req.fields;
+              const checkEmailUnique: IAssociationSchema | null = await Association.findOne({
+                email,
+              });
+              if (checkEmailUnique !== null) {
+                throw new Error("email exist");
+              }
+              const emailRegex: RegExp = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
+              if (!emailRegex.test(email)) {
+                throw new Error("email: not validated");
+              }
+              associationUpdate.email = email;
+            }
+
+            if (req.fields.password) {
+              const { password } = req.fields;
+              const passwordRegex: RegExp =
+                /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
+              const passwordLength: Number = password.length;
+              if (!passwordRegex.test(password)) {
+                throw new Error("password: not validated");
+              }
+              if (passwordLength < 8) {
+                throw new Error("password: too short");
+              }
+              const salt: string = await bcrypt.genSalt(10);
+              const hashed: string = await bcrypt.hash(password, salt);
+              associationUpdate.password = hashed;
+            }
+
+            if (req.fields.description) {
+              const { description } = req.fields;
+              associationUpdate.description = description;
+            }
+
+            if (req.files.logo) {
+              const { logo } = req.files;
+              if (
+                logo.type.includes("jpg") ||
+                logo.type.includes("jpeg") ||
+                logo.type.includes("image/png")
+              ) {
+                const uploadFile = async (path: string): Promise<string> => {
+                  const fileToUpload = await cloudinary.uploader.upload(path, {
+                    folder: `/association/logo`,
+                  });
+                  const fileLink: string = fileToUpload.secure_url;
+                  return fileLink;
+                };
+
+                associationUpdate.logo = await uploadFile(req.files.logo.path);
+                console.log(
+                  "file: association.routes.ts -> line 222 -> associationUpdate.logo",
+                  associationUpdate.logo
+                );
+              } else {
+                throw new Error("files: bad type");
+              }
+            }
+
+            await associationUpdate.save();
+            res.status(200).json(associationUpdate);
+          } catch (err: any) {
+            res.status(400).json(err.message);
+          }
+        } else {
+          res.status(401).json({ message: "unauthorized - password not match" });
+        }
+      }
+    );
+  } catch (error: any) {
+    res.status(400).json(error.message);
+  }
+});
+
+router.put(
+  "/api/association/archive/:id",
+  associationAuthenticated,
+  async (req, res): Promise<void> => {
+    try {
+      const associationToCheck: IAssociationSchema | null = await Association.findById(
+        req.params.id
+      );
+      if (associationToCheck === null) {
+        res.status(401).json({ message: "unauthorized - id not exist" });
+      } else {
+        await bcrypt.compare(
+          req.fields.currentPassword,
+          associationToCheck.password,
+          async (err: any, compareResult: boolean): Promise<void> => {
+            if (compareResult) {
+              associationToCheck.status = "achive";
+              await associationToCheck.save();
+              res.json({ message: "Archive Association" });
+            } else {
+              res.status(401).json({ message: "unauthorized - password not match" });
+            }
+          }
+        );
+      }
+    } catch (error: any) {
+      res.status(400).json({ message: "Error to delete Association" });
+    }
+  }
+);
 
 module.exports = router;
