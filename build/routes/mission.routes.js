@@ -10,6 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // eslint-disable-next-line import/no-import-module-exports
+// import { Association } from "../models/association.model";
+// eslint-disable-next-line import/no-import-module-exports
 const mission_model_1 = require("../models/mission.model");
 const express = require("express");
 const associationAuthenticated = require("../middlewares/associationAuthenticated");
@@ -73,13 +75,13 @@ router.get("/api/association/mission/:id", (req, res) => __awaiter(void 0, void 
         const mission = yield mission_model_1.Mission.findById(req.params.id).populate("association");
         console.log("file: mission.routes.ts -> line 83 -> allMission", mission);
         if (mission === null) {
-            res.status(404).json({ message: "mission not found" });
+            throw new Error("mission not found");
             // TODO : redirect 404
         }
         res.status(200).json(mission);
     }
     catch (error) {
-        res.status(400).json(error.message);
+        res.status(404).json(error.message);
     }
 }));
 router.get("/api/association/missions/:associationId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -91,24 +93,25 @@ router.get("/api/association/missions/:associationId", (req, res) => __awaiter(v
         console.log("file: mission.routes.ts -> line 83 -> allMission", allMissionOneAssociation);
         if (allMissionOneAssociation === null) {
             res.status(200).json({ message: "empty mission for this association" });
-            // TODO : afficher message Aucune mission en cours
         }
         res.status(200).json(allMissionOneAssociation);
     }
     catch (error) {
-        res.status(400).json(error.message);
+        res.status(404).json(error.message);
     }
 }));
-// router.delete("/api/association/mission/delete/:id", async (req, res): Promise<void> => {
-//   try {
-//     const mission: IMissionSchema[] | null = await Mission.findByIdAndDelete(req.params.id);
-//     if (!mission) {
-//       res.status(404).json({ message: "Mission not found" });
-//     } else {
-//       return res.json({ message: "Delete mission" });
-//     }
-//   } catch (error: any) {
-//     res.status(400).json({ message: "Error to delete mission" });
-//   }
-// });
+router.delete("/api/association/mission/delete/:id", associationAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const mission = yield mission_model_1.Mission.findByIdAndDelete(req.params.id);
+        if (!mission) {
+            throw new Error("Mission not found");
+        }
+        else {
+            res.json({ message: "Delete mission" });
+        }
+    }
+    catch (error) {
+        res.status(400).json({ message: "Error to delete mission" });
+    }
+}));
 module.exports = router;
