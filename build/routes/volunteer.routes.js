@@ -208,12 +208,25 @@ router.put("/api/volunteer/update/:id", volunteerAuthenticated, (req, res) => __
 }));
 router.delete("/api/volunteer/delete/:id", volunteerAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const volunteer = yield volunteer_model_1.Volunteer.findByIdAndDelete(req.params.id);
-        if (!volunteer) {
-            res.status(404).json({ message: "Volunteer not found" });
+        const volunteerToCheck = yield volunteer_model_1.Volunteer.findById(req.params.id);
+        if (volunteerToCheck === null) {
+            res.status(401).json({ message: "unauthorized - id not exist" });
         }
         else {
-            res.json({ message: "Delete Volunteer" });
+            yield bcrypt.compare(req.fields.currentPassword, volunteerToCheck.password, (err, compareResult) => __awaiter(void 0, void 0, void 0, function* () {
+                if (compareResult) {
+                    const volunteer = yield volunteer_model_1.Volunteer.findByIdAndDelete(req.params.id);
+                    if (!volunteer) {
+                        res.status(404).json({ message: "Volunteer not found" });
+                    }
+                    else {
+                        res.json({ message: "Delete Volunteer" });
+                    }
+                }
+                else {
+                    res.status(401).json({ message: "unauthorized - password not match" });
+                }
+            }));
         }
     }
     catch (error) {
