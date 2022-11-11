@@ -17,6 +17,11 @@ const volunteerAuthenticated = (req, res, next) => __awaiter(void 0, void 0, voi
         const association = yield association_model_1.Association.findOne({
             token: bearerToken,
         });
+        if (req.params.id) {
+            if ((association === null || association === void 0 ? void 0 : association.id) !== req.params.id) {
+                res.status(401).json({ error: "unauthorized" });
+            }
+        }
         if (association) {
             req.association = association;
             next();

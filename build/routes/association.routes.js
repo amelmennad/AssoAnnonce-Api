@@ -209,4 +209,22 @@ router.get("/api/association/profil", associationAuthenticated, (req, res) => {
         res.status(400).json(error.message);
     }
 });
+// router.delete(
+//   "/api/association/delete/:id",
+//   associationAuthenticated,
+//   async (req, res): Promise<void> => {
+//     try {
+//       const association: IAssociationSchema[] | null = await Association.findByIdAndDelete(
+//         req.params.id
+//       );
+//       if (!association) {
+//         res.status(404).json({ message: "Association not found" });
+//       } else {
+//         res.json({ message: "Delete Association" });
+//       }
+//     } catch (error: any) {
+//       res.status(400).json({ message: "Error to delete Association" });
+//     }
+//   }
+// );
 module.exports = router;

@@ -9,6 +9,13 @@ const volunteerAuthenticated = async (req, res, next) => {
       token: bearerToken,
     });
 
+
+    if (req.params.id) {
+      if (association?.id !== req.params.id) {
+        res.status(401).json({ error: "unauthorized" });
+      }
+    }
+
     if (association) {
       req.association = association;
       next();
