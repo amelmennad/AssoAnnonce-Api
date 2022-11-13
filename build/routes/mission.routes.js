@@ -23,10 +23,11 @@ router.post("/api/association/mission/create", associationAuthenticated, (req, r
             !req.fields.place ||
             !req.fields.jobDescription ||
             !req.fields.startDate ||
-            !req.fields.endDate) {
+            !req.fields.endDate ||
+            !req.fields.association) {
             throw new Error("not all need data");
         }
-        const { missionTitle, place, jobDescription, startDate, endDate, groupedApplications, } = req.fields;
+        const { missionTitle, place, jobDescription, startDate, endDate, groupedApplications, association, } = req.fields;
         if (missionTitle.length < 20) {
             throw new Error("title too short");
         }
@@ -46,6 +47,7 @@ router.post("/api/association/mission/create", associationAuthenticated, (req, r
             startDate,
             endDate,
             groupedApplications,
+            association,
             timestamps: {
                 createdAt: Date.now(),
             },
@@ -57,7 +59,7 @@ router.post("/api/association/mission/create", associationAuthenticated, (req, r
         res.status(400).json(error.message);
     }
 }));
-router.get("/api/association/missions", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/api/missions", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // gerer la notion de date n'affichier que les mission actuel ou a venir
         const allMission = yield mission_model_1.Mission.find().populate("association");
@@ -69,7 +71,7 @@ router.get("/api/association/missions", (req, res) => __awaiter(void 0, void 0, 
         // else redirect 404
     }
 }));
-router.get("/api/association/mission/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/api/mission/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // gerer la notion de date n'affichier que les mission actuel ou a venir sauf cas authentification association see inside acrhiver
         const mission = yield mission_model_1.Mission.findById(req.params.id).populate("association");
@@ -100,7 +102,7 @@ router.get("/api/association/missions/:associationId", (req, res) => __awaiter(v
         res.status(404).json(error.message);
     }
 }));
-router.delete("/api/association/mission/delete/:id", associationAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete("/api/mission/delete/:id", associationAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const mission = yield mission_model_1.Mission.findByIdAndDelete(req.params.id);
         if (!mission) {

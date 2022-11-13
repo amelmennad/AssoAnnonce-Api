@@ -123,7 +123,7 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
 
     const uploadFile = async (path: string): Promise<string> => {
       const fileToUpload = await cloudinary.uploader.upload(path, {
-        folder: `/${rnaNumber}_${associationName}/${address}`,
+        folder: `/association/${rnaNumber}_${associationName}/${address}`,
       });
       const fileLink: string = fileToUpload.secure_url;
       return fileLink;
@@ -175,9 +175,14 @@ router.post("/api/association/register", async (req, res): Promise<void> => {
     }
 
     await newAssociation.save();
-    res
-      .status(200)
-      .json({ id: newAssociation.id, token: newAssociation.token, role: newAssociation.role });
+    res.status(200).json({
+      id: newAssociation.id,
+      token: newAssociation.token,
+      role: newAssociation.role,
+      associationName: newAssociation.associationName,
+      firstName: newAssociation.firstName,
+      lastName: newAssociation.lastName,
+    });
   } catch (err: any) {
     res.status(400).json(err.message);
   }
@@ -190,8 +195,7 @@ router.post("/api/association/login", async (req, res) => {
     });
 
     if (associationToCheck === null) {
-          throw new Error("Unauthorized");
-
+      throw new Error("Unauthorized");
     } else {
       const passwordClean = req.fields.password.replace(associationToCheck.salt, "");
       await bcrypt.compare(
@@ -206,6 +210,7 @@ router.post("/api/association/login", async (req, res) => {
               id: associationToCheck.id,
               token: associationToCheck.token,
               role: associationToCheck.role,
+              associationName: associationToCheck.associationName,
             });
           } else {
             throw new Error("Unauthorized");
@@ -218,31 +223,15 @@ router.post("/api/association/login", async (req, res) => {
   }
 });
 
-router.get("/api/association/profil", associationAuthenticated, (req, res) => {
+router.get("/api/association/:id", async (req, res) => {
   try {
-    interface IProfilData {
-      firstName: string;
-      lastName: string;
-      email: string;
-      logo?: string;
-      description?: string;
+    const associationProfilData = await Association.findById(req.params.id);
+
+    if (associationProfilData === null) {
+      res.status(404).json({ message: "Unauthorized" });
+    } else {
+      res.status(200).json(associationProfilData);
     }
-
-    const profilData: IProfilData = {
-      firstName: req.association.firstName,
-      lastName: req.association.lastName,
-      email: req.association.email,
-    };
-
-    if (req.association.logo) {
-      profilData.logo = req.association.logo;
-    }
-
-    if (req.association.description) {
-      profilData.description = req.association.description;
-    }
-
-    res.status(200).json(profilData);
   } catch (error: any) {
     res.status(400).json(error.message);
   }

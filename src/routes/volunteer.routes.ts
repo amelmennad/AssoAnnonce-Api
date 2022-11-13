@@ -11,6 +11,7 @@ const router = express.Router();
 const volunteerAuthenticated = require("../middlewares/volunteerAuthenticated");
 
 router.post("/api/volunteer/register", async (req, res): Promise<void> => {
+  console.log("file: volunteer.routes.ts -> line 14 -> req", req.fields);
   try {
     const checkEmailUnique: IVolunteerSchema | null = await Volunteer.findOne({
       email: req.fields.email,
@@ -18,6 +19,7 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
     if (checkEmailUnique !== null) {
       throw new Error("email exist");
     }
+    console.log("file: volunteer.routes.ts -> line 19 -> checkEmailUnique", checkEmailUnique);
 
     if (
       !req.fields.firstName ||
@@ -73,18 +75,25 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
       salt,
       token: uid2(16),
       birthday,
+      cgu,
       timestamps: {
         createdAt: Date.now(),
       },
     });
 
+    console.log("file: volunteer.routes.ts -> line 85 -> newVolunteer", "titi");
     await newVolunteer.save();
+    // console.log("file: volunteer.routes.ts -> line 85 -> newVolunteer", "newVolunteer");
 
-    res
-      .status(200)
-      .json({ id: newVolunteer.id, token: newVolunteer.token, role: newVolunteer.role });
+    res.status(200).json({
+      id: newVolunteer.id,
+      token: newVolunteer.token,
+      role: newVolunteer.role,
+      firstName: newVolunteer.firstName,
+      lastName: newVolunteer.lastName,
+    });
   } catch (error: any) {
-    res.status(400).json(error.message);
+    res.status(400).json(error);
   }
 });
 
@@ -102,22 +111,24 @@ router.post("/api/volunteer/login", async (req, res) => {
         passwordClean,
         volunteerToCheck.password,
         async (err: any, compareResult: boolean): Promise<void> => {
-           try {
-             if (compareResult) {
-               volunteerToCheck.token = uid2(16);
-               await volunteerToCheck.save();
+          try {
+            if (compareResult) {
+              volunteerToCheck.token = uid2(16);
+              await volunteerToCheck.save();
 
-               res.status(200).json({
-                 id: volunteerToCheck.id,
-                 token: volunteerToCheck.token,
-                 role: volunteerToCheck.role,
-               });
-             } else {
-               throw new Error("unauthorized - password not match");
-             }
-           } catch (e: any) {
-             res.status(401).json(e.message);
-           }
+              res.status(200).json({
+                id: volunteerToCheck.id,
+                token: volunteerToCheck.token,
+                role: volunteerToCheck.role,
+                firstName: volunteerToCheck.firstName,
+                lastName: volunteerToCheck.lastName,
+              });
+            } else {
+              throw new Error("unauthorized - password not match");
+            }
+          } catch (e: any) {
+            res.status(401).json(e.message);
+          }
         }
       );
     }
@@ -126,35 +137,15 @@ router.post("/api/volunteer/login", async (req, res) => {
   }
 });
 
-router.get("/api/volunteer/profil", volunteerAuthenticated, (req, res) => {
+router.get("/api/volunteer/:id", volunteerAuthenticated, async (req, res) => {
   try {
-    interface IVolunteerProfilData {
-      id: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-      birthday: string;
-      avatar?: string;
-      aboutme?: string;
+    const volunteerProfilData = await Volunteer.findById(req.params.id);
+
+    if (volunteerProfilData === null) {
+      res.status(404).json({ message: "Unauthorized" });
+    } else {
+      res.status(200).json(volunteerProfilData);
     }
-
-    const volunteerProfilData: IVolunteerProfilData = {
-      id: req.volunteer.id,
-      firstName: req.volunteer.firstName,
-      lastName: req.volunteer.lastName,
-      email: req.volunteer.email,
-      birthday: req.volunteer.birthday,
-    };
-
-    if (req.volunteer.avatar) {
-      volunteerProfilData.avatar = req.volunteer.avatar;
-    }
-
-    if (req.volunteer.aboutme) {
-      volunteerProfilData.aboutme = req.volunteer.aboutme;
-    }
-
-    res.status(200).json(volunteerProfilData);
   } catch (error: any) {
     res.status(400).json(error.message);
   }
@@ -208,6 +199,7 @@ router.put("/api/volunteer/update/:id", volunteerAuthenticated, async (req, res)
 
             if (req.files.avatar) {
               const { avatar } = req.files;
+              console.log("file: volunteer.routes.ts -> line 202 -> req.files", req.files);
               if (
                 avatar.type.includes("jpg") ||
                 avatar.type.includes("jpeg") ||

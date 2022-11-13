@@ -100,7 +100,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
         }
         const uploadFile = (path) => __awaiter(void 0, void 0, void 0, function* () {
             const fileToUpload = yield cloudinary.uploader.upload(path, {
-                folder: `/${rnaNumber}_${associationName}/${address}`,
+                folder: `/association/${rnaNumber}_${associationName}/${address}`,
             });
             const fileLink = fileToUpload.secure_url;
             return fileLink;
@@ -152,9 +152,14 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             }
         }
         yield newAssociation.save();
-        res
-            .status(200)
-            .json({ id: newAssociation.id, token: newAssociation.token, role: newAssociation.role });
+        res.status(200).json({
+            id: newAssociation.id,
+            token: newAssociation.token,
+            role: newAssociation.role,
+            associationName: newAssociation.associationName,
+            firstName: newAssociation.firstName,
+            lastName: newAssociation.lastName,
+        });
     }
     catch (err) {
         res.status(400).json(err.message);
@@ -178,6 +183,7 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
                         id: associationToCheck.id,
                         token: associationToCheck.token,
                         role: associationToCheck.role,
+                        associationName: associationToCheck.associationName,
                     });
                 }
                 else {
@@ -190,25 +196,20 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
         res.status(500).json(error.message);
     }
 }));
-router.get("/api/association/profil", associationAuthenticated, (req, res) => {
+router.get("/api/association/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const profilData = {
-            firstName: req.association.firstName,
-            lastName: req.association.lastName,
-            email: req.association.email,
-        };
-        if (req.association.logo) {
-            profilData.logo = req.association.logo;
+        const associationProfilData = yield association_model_1.Association.findById(req.params.id);
+        if (associationProfilData === null) {
+            res.status(404).json({ message: "Unauthorized" });
         }
-        if (req.association.description) {
-            profilData.description = req.association.description;
+        else {
+            res.status(200).json(associationProfilData);
         }
-        res.status(200).json(profilData);
     }
     catch (error) {
         res.status(400).json(error.message);
     }
-});
+}));
 router.put("/api/association/update/:id", associationAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const associationUpdate = req.association;

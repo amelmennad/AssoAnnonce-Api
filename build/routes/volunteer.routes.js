@@ -18,6 +18,7 @@ const cloudinary = require("cloudinary").v2;
 const router = express.Router();
 const volunteerAuthenticated = require("../middlewares/volunteerAuthenticated");
 router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("file: volunteer.routes.ts -> line 14 -> req", req.fields);
     try {
         const checkEmailUnique = yield volunteer_model_1.Volunteer.findOne({
             email: req.fields.email,
@@ -25,6 +26,7 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
         if (checkEmailUnique !== null) {
             throw new Error("email exist");
         }
+        console.log("file: volunteer.routes.ts -> line 19 -> checkEmailUnique", checkEmailUnique);
         if (!req.fields.firstName ||
             !req.fields.lastName ||
             !req.fields.email ||
@@ -69,17 +71,24 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
             salt,
             token: uid2(16),
             birthday,
+            cgu,
             timestamps: {
                 createdAt: Date.now(),
             },
         });
+        console.log("file: volunteer.routes.ts -> line 85 -> newVolunteer", "titi");
         yield newVolunteer.save();
-        res
-            .status(200)
-            .json({ id: newVolunteer.id, token: newVolunteer.token, role: newVolunteer.role });
+        // console.log("file: volunteer.routes.ts -> line 85 -> newVolunteer", "newVolunteer");
+        res.status(200).json({
+            id: newVolunteer.id,
+            token: newVolunteer.token,
+            role: newVolunteer.role,
+            firstName: newVolunteer.firstName,
+            lastName: newVolunteer.lastName,
+        });
     }
     catch (error) {
-        res.status(400).json(error.message);
+        res.status(400).json(error);
     }
 }));
 router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -101,6 +110,8 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
                             id: volunteerToCheck.id,
                             token: volunteerToCheck.token,
                             role: volunteerToCheck.role,
+                            firstName: volunteerToCheck.firstName,
+                            lastName: volunteerToCheck.lastName,
                         });
                     }
                     else {
@@ -117,27 +128,20 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
         res.status(401).json(error.message);
     }
 }));
-router.get("/api/volunteer/profil", volunteerAuthenticated, (req, res) => {
+router.get("/api/volunteer/:id", volunteerAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const volunteerProfilData = {
-            id: req.volunteer.id,
-            firstName: req.volunteer.firstName,
-            lastName: req.volunteer.lastName,
-            email: req.volunteer.email,
-            birthday: req.volunteer.birthday,
-        };
-        if (req.volunteer.avatar) {
-            volunteerProfilData.avatar = req.volunteer.avatar;
+        const volunteerProfilData = yield volunteer_model_1.Volunteer.findById(req.params.id);
+        if (volunteerProfilData === null) {
+            res.status(404).json({ message: "Unauthorized" });
         }
-        if (req.volunteer.aboutme) {
-            volunteerProfilData.aboutme = req.volunteer.aboutme;
+        else {
+            res.status(200).json(volunteerProfilData);
         }
-        res.status(200).json(volunteerProfilData);
     }
     catch (error) {
         res.status(400).json(error.message);
     }
-});
+}));
 router.put("/api/volunteer/update/:id", volunteerAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const volunteerUpdate = req.volunteer;
@@ -178,6 +182,7 @@ router.put("/api/volunteer/update/:id", volunteerAuthenticated, (req, res) => __
                     }
                     if (req.files.avatar) {
                         const { avatar } = req.files;
+                        console.log("file: volunteer.routes.ts -> line 202 -> req.files", req.files);
                         if (avatar.type.includes("jpg") ||
                             avatar.type.includes("jpeg") ||
                             avatar.type.includes("image/png")) {

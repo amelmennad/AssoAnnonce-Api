@@ -20,7 +20,8 @@ router.post(
         !req.fields.place ||
         !req.fields.jobDescription ||
         !req.fields.startDate ||
-        !req.fields.endDate
+        !req.fields.endDate ||
+        !req.fields.association
       ) {
         throw new Error("not all need data");
       }
@@ -32,6 +33,7 @@ router.post(
         startDate,
         endDate,
         groupedApplications,
+        association,
       }: IMissionSchema = req.fields;
 
       if (missionTitle.length < 20) {
@@ -55,6 +57,7 @@ router.post(
         startDate,
         endDate,
         groupedApplications,
+        association,
         timestamps: {
           createdAt: Date.now(),
         },
@@ -69,7 +72,7 @@ router.post(
   }
 );
 
-router.get("/api/association/missions", async (req, res): Promise<void> => {
+router.get("/api/missions", async (req, res): Promise<void> => {
   try {
     // gerer la notion de date n'affichier que les mission actuel ou a venir
 
@@ -82,7 +85,7 @@ router.get("/api/association/missions", async (req, res): Promise<void> => {
   }
 });
 
-router.get("/api/association/mission/:id", async (req, res): Promise<void> => {
+router.get("/api/mission/:id", async (req, res): Promise<void> => {
   try {
     // gerer la notion de date n'affichier que les mission actuel ou a venir sauf cas authentification association see inside acrhiver
 
@@ -121,7 +124,7 @@ router.get("/api/association/missions/:associationId", async (req, res): Promise
 });
 
 router.delete(
-  "/api/association/mission/delete/:id",
+  "/api/mission/delete/:id",
   associationAuthenticated,
   async (req, res): Promise<void> => {
     try {
