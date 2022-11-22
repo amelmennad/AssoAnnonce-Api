@@ -5,6 +5,7 @@ export interface IAssociationSchema extends Document {
   status: string;
   firstName: string;
   lastName: string;
+  slug: string;
   email: string;
   password: string;
   salt: string;
@@ -41,6 +42,7 @@ const AssociationSchema: Schema = new Schema<IAssociationSchema>({
   role: { type: String, required: true, default: "association" },
   status: { type: String, required: true, default: "pending" },
   firstName: { type: String, required: true },
+  slug: { type: String, required: true, unique: true },
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -51,7 +53,7 @@ const AssociationSchema: Schema = new Schema<IAssociationSchema>({
   interiorRules: { type: String, required: true },
   secondaryEstablishment: { type: Boolean, required: true },
   address: { type: String, required: true },
-  rnaNumber: { type: String, required: true },
+  rnaNumber: { type: String, required: true, unique: true },
   sirene: { type: String, required: true },
   sireneNumber: { type: String },
   associationName: { type: String, required: true },

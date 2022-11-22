@@ -4,6 +4,8 @@ import { Volunteer, IVolunteerSchema } from "../models/volunteer.model";
 const express = require("express");
 const bcrypt = require("bcrypt");
 const uid2 = require("uid2");
+const urlSlug = require("url-slug");
+
 const cloudinary = require("cloudinary").v2;
 
 const router = express.Router();
@@ -19,7 +21,7 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
     if (checkEmailUnique !== null) {
       throw new Error("email exist");
     }
-    console.log("file: volunteer.routes.ts -> line 19 -> checkEmailUnique", checkEmailUnique);
+    // console.log("file: volunteer.routes.ts -> line 19 -> checkEmailUnique", checkEmailUnique);
 
     if (
       !req.fields.firstName ||
@@ -63,8 +65,8 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
       throw new Error("cgu: not validated");
     }
 
-    const salt: string = await bcrypt.genSalt(10);
-    const hashed: string = await bcrypt.hash(password, salt);
+    const salt: string | null = await bcrypt.genSalt(10);
+    const hashed: string | null = await bcrypt.hash(password, salt);
 
     const newVolunteer: IVolunteerSchema = new Volunteer({
       role: "volunteer",
@@ -81,19 +83,35 @@ router.post("/api/volunteer/register", async (req, res): Promise<void> => {
       },
     });
 
-    console.log("file: volunteer.routes.ts -> line 85 -> newVolunteer", "titi");
+    let slug = urlSlug.convert(`${firstName} ${lastName}`, {
+      transformer: urlSlug.LOWERCASE_TRANSFORMER,
+      separator: "-",
+    });
+    console.log("file: volunteer.routes.ts -> line 90 -> slug", slug);
+
+    const slugExiste: IVolunteerSchema[] | null = await Volunteer.find({
+      slug: { $regex: `.*${slug}.*` },
+    });
+    if (slugExiste.length === 0) {
+      slug = `${slug}-1`;
+    } else {
+      slug = `${slug}-${slugExiste.length}`;
+    }
+    console.log("file: volunteer.routes.ts -> line 90 -> slug", slug);
+
+    newVolunteer.slug = slug;
+    // // console.log("file: volunteer.routes.ts -> line 97 -> newVolunteer", newVolunteer);
+    // // console.log("file: volunteer.routes.ts -> line 97 -> newVolunteer.slug", newVolunteer.slug);
     await newVolunteer.save();
-    // console.log("file: volunteer.routes.ts -> line 85 -> newVolunteer", "newVolunteer");
 
     res.status(200).json({
       id: newVolunteer.id,
       token: newVolunteer.token,
       role: newVolunteer.role,
-      firstName: newVolunteer.firstName,
-      lastName: newVolunteer.lastName,
+      slug: newVolunteer.slug,
     });
   } catch (error: any) {
-    res.status(400).json(error);
+    res.status(400).json(error.message);
   }
 });
 
@@ -120,8 +138,7 @@ router.post("/api/volunteer/login", async (req, res) => {
                 id: volunteerToCheck.id,
                 token: volunteerToCheck.token,
                 role: volunteerToCheck.role,
-                firstName: volunteerToCheck.firstName,
-                lastName: volunteerToCheck.lastName,
+                slug: volunteerToCheck.slug,
               });
             } else {
               throw new Error("unauthorized - password not match");
@@ -137,17 +154,20 @@ router.post("/api/volunteer/login", async (req, res) => {
   }
 });
 
-router.get("/api/volunteer/:id", volunteerAuthenticated, async (req, res) => {
+router.get("/api/volunteer/:slug", async (req, res) => {
   try {
-    const volunteerProfilData = await Volunteer.findById(req.params.id);
+    const volunteerProfilData: IVolunteerSchema | null = await Volunteer.findOne({
+      slug: req.params.slug,
+    });
+    console.log("file: volunteer.routes.ts -> line 167 -> req.params", req.params);
 
     if (volunteerProfilData === null) {
-      res.status(404).json({ message: "Unauthorized" });
+      throw new Error("not found");
     } else {
       res.status(200).json(volunteerProfilData);
     }
   } catch (error: any) {
-    res.status(400).json(error.message);
+    res.status(404).json("not found");
   }
 });
 
@@ -187,8 +207,8 @@ router.put("/api/volunteer/update/:id", volunteerAuthenticated, async (req, res)
               if (passwordLength < 8) {
                 throw new Error("password: too short");
               }
-              const salt: string = await bcrypt.genSalt(10);
-              const hashed: string = await bcrypt.hash(password, salt);
+              const salt: string | null = await bcrypt.genSalt(10);
+              const hashed: string | null = await bcrypt.hash(password, salt);
               volunteerUpdate.password = hashed;
             }
 
@@ -205,11 +225,11 @@ router.put("/api/volunteer/update/:id", volunteerAuthenticated, async (req, res)
                 avatar.type.includes("jpeg") ||
                 avatar.type.includes("image/png")
               ) {
-                const uploadFile = async (path: string): Promise<string> => {
+                const uploadFile = async (path: string | null): Promise<string | null> => {
                   const fileToUpload = await cloudinary.uploader.upload(path, {
                     folder: `/volunteer/`,
                   });
-                  const fileLink: string = fileToUpload.secure_url;
+                  const fileLink: string | null = fileToUpload.secure_url;
                   return fileLink;
                 };
 

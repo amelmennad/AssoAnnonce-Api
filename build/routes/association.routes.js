@@ -14,6 +14,7 @@ const association_model_1 = require("../models/association.model");
 const express = require("express");
 const bcrypt = require("bcrypt");
 const uid2 = require("uid2");
+const urlSlug = require("url-slug");
 const cloudinary = require("cloudinary").v2;
 const router = express.Router();
 const associationAuthenticated = require("../middlewares/associationAuthenticated");
@@ -24,7 +25,7 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
         const checkEmailUnique = yield association_model_1.Association.findOne({
             email: req.fields.email,
         });
-        if (checkEmailUnique !== null) {
+        if (checkEmailUnique) {
             throw new Error("email exist");
         }
         if (!req.fields.lastName ||
@@ -48,6 +49,12 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
             !req.files.joafePublication.path ||
             !req.fields.cgu) {
             throw new Error("not all need data");
+        }
+        const checkRnaNumber = yield association_model_1.Association.find({
+            rnaNumber: req.fields.rnaNumber,
+        });
+        if (checkRnaNumber.length !== 0) {
+            throw new Error("rna exist");
         }
         const { firstName, lastName, email, password, secondaryEstablishment, address, rnaNumber, sirene, associationName, objectAssociation, headOffice, publicUtility, approvale, needInsurance, alsaceMoselleLaw, cgu, } = req.fields;
         const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,}$/;
@@ -151,14 +158,27 @@ router.post("/api/association/register", (req, res) => __awaiter(void 0, void 0,
                 newAssociation.insuranceCopy = yield uploadFile(req.files.insuranceCopy.path);
             }
         }
+        let slug = urlSlug.convert(`${associationName}`, {
+            transformer: urlSlug.LOWERCASE_TRANSFORMER,
+            separator: "-",
+        });
+        console.log("file: volunteer.routes.ts -> line 90 -> slug", slug);
+        const slugExiste = yield association_model_1.Association.find({
+            slug: { $regex: `.*${slug}.*` },
+        });
+        if (slugExiste.length === 0) {
+            slug = `${slug}-1`;
+        }
+        else {
+            slug = `${slug}-${slugExiste.length}`;
+        }
+        newAssociation.slug = slug;
         yield newAssociation.save();
         res.status(200).json({
             id: newAssociation.id,
             token: newAssociation.token,
             role: newAssociation.role,
-            associationName: newAssociation.associationName,
-            firstName: newAssociation.firstName,
-            lastName: newAssociation.lastName,
+            slug: newAssociation.slug,
         });
     }
     catch (err) {
@@ -183,7 +203,7 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
                         id: associationToCheck.id,
                         token: associationToCheck.token,
                         role: associationToCheck.role,
-                        associationName: associationToCheck.associationName,
+                        slug: associationToCheck.slug,
                     });
                 }
                 else {
@@ -196,9 +216,11 @@ router.post("/api/association/login", (req, res) => __awaiter(void 0, void 0, vo
         res.status(500).json(error.message);
     }
 }));
-router.get("/api/association/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/api/association/:slug", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const associationProfilData = yield association_model_1.Association.findById(req.params.id);
+        const associationProfilData = yield association_model_1.Association.findOne({
+            slug: req.params.slug,
+        });
         if (associationProfilData === null) {
             res.status(404).json({ message: "Unauthorized" });
         }
@@ -207,7 +229,7 @@ router.get("/api/association/:id", (req, res) => __awaiter(void 0, void 0, void 
         }
     }
     catch (error) {
-        res.status(400).json(error.message);
+        res.status(404).json("not found");
     }
 }));
 router.put("/api/association/update/:id", associationAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

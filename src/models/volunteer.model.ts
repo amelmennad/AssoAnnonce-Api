@@ -4,6 +4,7 @@ export interface IVolunteerSchema extends Document {
   role: string;
   firstName: string;
   lastName: string;
+  slug: string;
   email: string;
   password: string;
   salt: string;
@@ -22,6 +23,7 @@ const VolunteerSchema: Schema = new Schema<IVolunteerSchema>({
   role: { type: String, required: true, default: "volunteer" },
   firstName: { type: String, required: true, minlength: 3 },
   lastName: { type: String, required: true, minlength: 3 },
+  slug: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true, minlength: 8 },
   salt: { type: String, required: true },

@@ -14,6 +14,7 @@ const volunteer_model_1 = require("../models/volunteer.model");
 const express = require("express");
 const bcrypt = require("bcrypt");
 const uid2 = require("uid2");
+const urlSlug = require("url-slug");
 const cloudinary = require("cloudinary").v2;
 const router = express.Router();
 const volunteerAuthenticated = require("../middlewares/volunteerAuthenticated");
@@ -26,7 +27,7 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
         if (checkEmailUnique !== null) {
             throw new Error("email exist");
         }
-        console.log("file: volunteer.routes.ts -> line 19 -> checkEmailUnique", checkEmailUnique);
+        // console.log("file: volunteer.routes.ts -> line 19 -> checkEmailUnique", checkEmailUnique);
         if (!req.fields.firstName ||
             !req.fields.lastName ||
             !req.fields.email ||
@@ -76,19 +77,34 @@ router.post("/api/volunteer/register", (req, res) => __awaiter(void 0, void 0, v
                 createdAt: Date.now(),
             },
         });
-        console.log("file: volunteer.routes.ts -> line 85 -> newVolunteer", "titi");
+        let slug = urlSlug.convert(`${firstName} ${lastName}`, {
+            transformer: urlSlug.LOWERCASE_TRANSFORMER,
+            separator: "-",
+        });
+        console.log("file: volunteer.routes.ts -> line 90 -> slug", slug);
+        const slugExiste = yield volunteer_model_1.Volunteer.find({
+            slug: { $regex: `.*${slug}.*` },
+        });
+        if (slugExiste.length === 0) {
+            slug = `${slug}-1`;
+        }
+        else {
+            slug = `${slug}-${slugExiste.length}`;
+        }
+        console.log("file: volunteer.routes.ts -> line 90 -> slug", slug);
+        newVolunteer.slug = slug;
+        // // console.log("file: volunteer.routes.ts -> line 97 -> newVolunteer", newVolunteer);
+        // // console.log("file: volunteer.routes.ts -> line 97 -> newVolunteer.slug", newVolunteer.slug);
         yield newVolunteer.save();
-        // console.log("file: volunteer.routes.ts -> line 85 -> newVolunteer", "newVolunteer");
         res.status(200).json({
             id: newVolunteer.id,
             token: newVolunteer.token,
             role: newVolunteer.role,
-            firstName: newVolunteer.firstName,
-            lastName: newVolunteer.lastName,
+            slug: newVolunteer.slug,
         });
     }
     catch (error) {
-        res.status(400).json(error);
+        res.status(400).json(error.message);
     }
 }));
 router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -110,8 +126,7 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
                             id: volunteerToCheck.id,
                             token: volunteerToCheck.token,
                             role: volunteerToCheck.role,
-                            firstName: volunteerToCheck.firstName,
-                            lastName: volunteerToCheck.lastName,
+                            slug: volunteerToCheck.slug,
                         });
                     }
                     else {
@@ -128,18 +143,21 @@ router.post("/api/volunteer/login", (req, res) => __awaiter(void 0, void 0, void
         res.status(401).json(error.message);
     }
 }));
-router.get("/api/volunteer/:id", volunteerAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/api/volunteer/:slug", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const volunteerProfilData = yield volunteer_model_1.Volunteer.findById(req.params.id);
+        const volunteerProfilData = yield volunteer_model_1.Volunteer.findOne({
+            slug: req.params.slug,
+        });
+        console.log("file: volunteer.routes.ts -> line 167 -> req.params", req.params);
         if (volunteerProfilData === null) {
-            res.status(404).json({ message: "Unauthorized" });
+            throw new Error("not found");
         }
         else {
             res.status(200).json(volunteerProfilData);
         }
     }
     catch (error) {
-        res.status(400).json(error.message);
+        res.status(404).json("not found");
     }
 }));
 router.put("/api/volunteer/update/:id", volunteerAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
